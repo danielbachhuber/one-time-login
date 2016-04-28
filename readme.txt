@@ -21,7 +21,7 @@ After you run the command above, you'll see a success message like this:
 
 Copy the URL, paste it into your web browser, and... voila!
 
-Because
+Because it's a one-time login URL, it will only work once. If you need access again, you'll need to run the WP-CLI command again.
 
 == Installation ==
 
