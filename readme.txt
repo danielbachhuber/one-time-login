@@ -11,7 +11,7 @@ Use WP-CLI to generate a one-time login URL for any user
 
 == Description ==
 
-Need access to a WordPress install but don't want to create a user account for it? Use this plugin and WP-CLI to generate a one-time login URL for any user:
+Need access to a WordPress install but don't want to create a new user account? Use this plugin and WP-CLI to generate a one-time login URL for any existing user:
 
     wp plugin install one-time-login --activate && wp user one-time-login <user>
 
