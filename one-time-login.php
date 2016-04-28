@@ -17,6 +17,9 @@
  *
  * <user>
  * : ID, email address, or user login for the user.
+ *
+ * [--porcelain]
+ * : Only output the one-time login URL, if you want to pipe it to another command.
  */
 function one_time_login_wp_cli_command( $args ) {
 
@@ -29,7 +32,12 @@ function one_time_login_wp_cli_command( $args ) {
 		'user_id'              => $user->ID,
 		'one_time_login_token' => $token,
 	);
-	WP_CLI::success( sprintf( 'Your one-time login URL is: %s', add_query_arg( $query_args, wp_login_url() ) ) );
+	$login_url = add_query_arg( $query_args, wp_login_url() );
+	if ( WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
+		WP_CLI::log( $login_url );
+	} else {
+		WP_CLI::success( sprintf( 'Your one-time login URL is: %s', $login_url ) );
+	}
 }
 
 if ( class_exists( 'WP_CLI' ) ) {
