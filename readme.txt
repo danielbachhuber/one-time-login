@@ -23,6 +23,8 @@ Copy the URL, paste it into your web browser, and... voila!
 
 Because it's a one-time login URL, it will only work once. If you need access again, you'll need to run the WP-CLI command again.
 
+Feel free to [file issues and pull requests](https://github.com/runcommand/one-time-login) against the project on Github.
+
 == Installation ==
 
 See description for installation and usage instructions.
