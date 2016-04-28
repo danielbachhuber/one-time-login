@@ -48,7 +48,7 @@ function one_time_login_handle_token() {
 
 	$error = __( 'Invalid one-time login token', 'one-time-login' );
 
-	// Don't expose which user ids are valid
+	// Use a generic error message to ensure user ids can't be sniffed
 	$user = get_user_by( 'id', (int) $_GET['user_id'] );
 	if ( ! $user ) {
 		wp_die( $error );
