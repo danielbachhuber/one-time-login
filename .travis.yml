@@ -10,13 +10,11 @@ branches:
     - master
 
 php:
-  - 5.3
   - 5.6
 
 env:
+  - WP_VERSION=nightly WP_MULTISITE=0
   - WP_VERSION=latest WP_MULTISITE=0
-  - WP_VERSION=3.0.1 WP_MULTISITE=0
-  - WP_VERSION=3.4 WP_MULTISITE=0
 
 matrix:
   include:
