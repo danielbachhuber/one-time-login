@@ -7,7 +7,7 @@
  * Author URI:      http://runcommand.io
  * Text Domain:     one-time-login
  * Domain Path:     /languages
- * Version:         0.1.0
+ * Version:         0.1.1
  *
  * @package         One_Time_Login
  */
@@ -21,7 +21,7 @@
  * [--porcelain]
  * : Only output the one-time login URL, if you want to pipe it to another command.
  */
-function one_time_login_wp_cli_command( $args ) {
+function one_time_login_wp_cli_command( $args, $assoc_args ) {
 
 	$fetcher = new WP_CLI\Fetchers\User;
 	$user = $fetcher->get_check( $args[0] );
