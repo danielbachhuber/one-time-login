@@ -7,7 +7,7 @@
  * Author URI:      http://runcommand.io
  * Text Domain:     one-time-login
  * Domain Path:     /languages
- * Version:         0.1.1
+ * Version:         0.1.2
  *
  * @package         One_Time_Login
  */

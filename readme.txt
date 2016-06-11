@@ -3,7 +3,7 @@ Contributors: danielbachhuber, getpantheon
 Tags: login
 Requires at least: 4.4
 Tested up to: 4.5.2
-Stable tag: 0.1.1
+Stable tag: 0.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,6 +30,10 @@ Feel free to [file issues and pull requests](https://github.com/runcommand/one-t
 See description for installation and usage instructions.
 
 == Changelog ==
+
+= 0.1.2 (June 11th, 2016) =
+
+* Fire `one_time_login_created` action when login URL is created, and `one_time_login_logged_in` action when user is logged in via one-time login URL.
 
 = 0.1.1 (May 26th, 2016) =
 
