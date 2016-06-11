@@ -33,7 +33,7 @@ See description for installation and usage instructions.
 
 ### 0.1.2 (June 11th, 2016) ###
 
-* Fire `one_time_login_created` action when login URL is created, and `one_time_login_logged_in` action when user is logged in via one-time login URL.
+* Fires `one_time_login_created` action when login URL is created, and `one_time_login_logged_in` action when user is logged in via one-time login URL.
 
 ### 0.1.1 (May 26th, 2016) ###
 
