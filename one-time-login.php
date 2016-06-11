@@ -33,6 +33,7 @@ function one_time_login_wp_cli_command( $args, $assoc_args ) {
 		'one_time_login_token' => $token,
 	);
 	$login_url = add_query_arg( $query_args, wp_login_url() );
+	do_action( 'one_time_login_created', $user );
 	if ( WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 		WP_CLI::log( $login_url );
 	} else {
@@ -67,6 +68,7 @@ function one_time_login_handle_token() {
 		wp_die( $error );
 	}
 
+	do_action( 'one_time_login_logged_in', $user );
 	delete_user_meta( $user->ID, 'one_time_login_token' );
 	wp_set_auth_cookie( $user->ID, true, is_ssl() );
 	wp_safe_redirect( admin_url() );
