@@ -15,29 +15,45 @@
 /**
  * Generate a one-time login URL for any user.
  *
+ * ## OPTIONS
+ *
  * <user>
  * : ID, email address, or user login for the user.
  *
- * [--porcelain]
- * : Only output the one-time login URL, if you want to pipe it to another command.
+ * [--count=<count>]
+ * : Generate a specified number of login tokens.
+ * ---
+ * default: 1
+ * ---
+ *
+ * ## EXAMPLES
+ *
+ *     # Generate two one-time login URLs.
+ *     $ wp user one-time-login testuser --count=2
+ *     http://wpdev.test/wp-login.php?user_id=2&one_time_login_token=ebe62e3
+ *     http://wpdev.test/wp-login.php?user_id=2&one_time_login_token=eb41c77
  */
 function one_time_login_wp_cli_command( $args, $assoc_args ) {
 
 	$fetcher = new WP_CLI\Fetchers\User;
 	$user = $fetcher->get_check( $args[0] );
-	$password = wp_generate_password();
-	$token = sha1( $password );
-	update_user_meta( $user->ID, 'one_time_login_token', $token );
-	$query_args = array(
-		'user_id'              => $user->ID,
-		'one_time_login_token' => $token,
-	);
-	$login_url = add_query_arg( $query_args, wp_login_url() );
+
+	$count = (int) $assoc_args['count'];
+	$tokens = array();
+	for ( $i = 0; $i < $count; $i++ ) {
+		$password = wp_generate_password();
+		$tokens[] = sha1( $password );
+	}
+
+	update_user_meta( $user->ID, 'one_time_login_token', $tokens );
 	do_action( 'one_time_login_created', $user );
-	if ( WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
+	foreach ( $tokens as $token ) {
+		$query_args = array(
+			'user_id'              => $user->ID,
+			'one_time_login_token' => $token,
+		);
+		$login_url = add_query_arg( $query_args, wp_login_url() );
 		WP_CLI::log( $login_url );
-	} else {
-		WP_CLI::success( sprintf( 'Your one-time login URL is: %s', $login_url ) );
 	}
 }
 
@@ -63,13 +79,23 @@ function one_time_login_handle_token() {
 		wp_die( $error );
 	}
 
-	$token = get_user_meta( $user->ID, 'one_time_login_token', true );
-	if ( ! hash_equals( $token, $_GET['one_time_login_token'] ) ) {
+	$tokens = get_user_meta( $user->ID, 'one_time_login_token', true );
+	$tokens = is_string( $tokens ) ? array( $tokens ) : $tokens;
+	$is_valid = false;
+	foreach ( $tokens as $i => $token ) {
+		if ( hash_equals( $token, $_GET['one_time_login_token'] ) ) {
+			$is_valid = true;
+			unset( $tokens[ $i ] );
+			break;
+		}
+	}
+
+	if ( ! $is_valid ) {
 		wp_die( $error );
 	}
 
 	do_action( 'one_time_login_logged_in', $user );
-	delete_user_meta( $user->ID, 'one_time_login_token' );
+	update_user_meta( $user->ID, 'one_time_login_token', $tokens );
 	wp_set_auth_cookie( $user->ID, true, is_ssl() );
 	wp_safe_redirect( admin_url() );
 	exit;
