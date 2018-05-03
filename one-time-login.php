@@ -3,11 +3,11 @@
  * Plugin Name:     One Time Login
  * Plugin URI:      https://wordpress.org/plugins/one-time-login/
  * Description:     Use WP-CLI to generate a one-time login URL for any user.
- * Author:          Daniel Bachhuber, Pantheon
- * Author URI:      http://runcommand.io
+ * Author:          Daniel Bachhuber, Pantheon, DreamHost
+ * Author URI:      https://danielbachhuber.com
  * Text Domain:     one-time-login
  * Domain Path:     /languages
- * Version:         0.1.2
+ * Version:         0.2.0
  *
  * @package         One_Time_Login
  */
