@@ -71,7 +71,7 @@ function one_time_login_handle_token() {
 		return;
 	}
 
-	$error = __( 'Invalid one-time login token', 'one-time-login' );
+	$error = sprintf( __( 'Invalid one-time login token. <a href="%s">Try logging in</a>?', 'one-time-login' ), wp_login_url() );
 
 	// Use a generic error message to ensure user ids can't be sniffed
 	$user = get_user_by( 'id', (int) $_GET['user_id'] );
