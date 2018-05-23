@@ -74,7 +74,7 @@ function one_time_login_handle_token() {
 	if ( is_user_logged_in() ) {
 		$error = sprintf( __( 'Invalid one-time login token, but you are logged in as \'%s\'. <a href="%s">Go to the dashboard instead</a>?', 'one-time-login' ), wp_get_current_user()->user_login, admin_url() );
 	} else {
-		$error = sprintf( __( 'Invalid one-time login token. <a href="%s">Try logging in instead</a>?', 'one-time-login' ), wp_login_url() );
+		$error = sprintf( __( 'Invalid one-time login token. <a href="%s">Try signing in instead</a>?', 'one-time-login' ), wp_login_url() );
 	}
 
 	// Use a generic error message to ensure user ids can't be sniffed
