@@ -105,6 +105,29 @@ function one_time_login_handle_token() {
 		$error = sprintf( __( 'Invalid one-time login token. <a href="%s">Try signing in instead</a>?', 'one-time-login' ), wp_login_url() );
 	}
 
+	// Ensure any expired crons are run
+	// It would be nice if WP-Cron had an API for this, but alas.
+	$crons = _get_cron_array();
+	if ( ! empty( $crons ) ) {
+		foreach ( $crons as $time => $hooks ) {
+			if ( time() < $time ) {
+				continue;
+			}
+			foreach ( $hooks as $hook => $hook_events ) {
+				if ( 'one_time_login_cleanup_expired_tokens' !== $hook ) {
+					continue;
+				}
+				foreach ( $hook_events as $sig => $data ) {
+					if ( ! defined( 'DOING_CRON' ) ) {
+						define( 'DOING_CRON', true );
+					}
+					do_action_ref_array( $hook, $data['args'] );
+					wp_unschedule_event( $time, $hook, $data['args'] );
+				}
+			}
+		}
+	}
+
 	// Use a generic error message to ensure user ids can't be sniffed
 	$user = get_user_by( 'id', (int) $_GET['user_id'] );
 	if ( ! $user ) {
