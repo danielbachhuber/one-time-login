@@ -26,6 +26,9 @@
  * default: 1
  * ---
  *
+ * [--delayed-delete]
+ * : Delete existing tokens after 15 minutes, instead of immediately.
+ *
  * ## EXAMPLES
  *
  *     # Generate two one-time login URLs.
@@ -37,17 +40,26 @@ function one_time_login_wp_cli_command( $args, $assoc_args ) {
 
 	$fetcher = new WP_CLI\Fetchers\User;
 	$user = $fetcher->get_check( $args[0] );
-
+	$delayed_delete = WP_CLI\Utils\get_flag_value( $assoc_args, 'delayed-delete' );
 	$count = (int) $assoc_args['count'];
-	$tokens = array();
+	$tokens = $new_tokens = array();
+
+	if ( $delayed_delete ) {
+		$tokens = get_user_meta( $user->ID, 'one_time_login_token', true );
+		$tokens = is_string( $tokens ) ? array( $tokens ) : $tokens;
+		wp_schedule_single_event( time() + ( 15 * MINUTE_IN_SECONDS ), 'one_time_login_cleanup_expired_tokens', array( $user->ID, $tokens ) );
+	}
+
 	for ( $i = 0; $i < $count; $i++ ) {
 		$password = wp_generate_password();
-		$tokens[] = sha1( $password );
+		$token = sha1( $password );
+		$tokens[] = $token;
+		$new_tokens[] = $token;
 	}
 
 	update_user_meta( $user->ID, 'one_time_login_token', $tokens );
 	do_action( 'one_time_login_created', $user );
-	foreach ( $tokens as $token ) {
+	foreach ( $new_tokens as $token ) {
 		$query_args = array(
 			'user_id'              => $user->ID,
 			'one_time_login_token' => $token,
@@ -60,6 +72,22 @@ function one_time_login_wp_cli_command( $args, $assoc_args ) {
 if ( class_exists( 'WP_CLI' ) ) {
 	WP_CLI::add_command( 'user one-time-login', 'one_time_login_wp_cli_command' );
 }
+
+/**
+ * Handle cleanup process for expired one-time login tokens.
+ */
+function one_time_login_cleanup_expired_tokens( $user_id, $expired_tokens ) {
+	$tokens = get_user_meta( $user_id, 'one_time_login_token', true );
+	$tokens = is_string( $tokens ) ? array( $tokens ) : $tokens;
+	$new_tokens = array();
+	foreach ( $tokens as $token ) {
+		if ( ! in_array( $token, $expired_tokens, true ) ) {
+			$new_tokens[] = $token;
+		}
+	}
+	update_user_meta( $user_id, 'one_time_login_token', $new_tokens );
+}
+add_action( 'one_time_login_cleanup_expired_tokens', 'one_time_login_cleanup_expired_tokens' );
 
 /**
  * Log a request in as a user if the token is valid.
