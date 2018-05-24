@@ -1,9 +1,9 @@
 === One Time Login ===
-Contributors: danielbachhuber, getpantheon, dreamhost
+Contributors: danielbachhuber
 Tags: login
 Requires at least: 4.4
 Tested up to: 4.9
-Stable tag: 0.2.0
+Stable tag: 0.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,6 +30,10 @@ Feel free to [file issues and pull requests](https://github.com/danielbachhuber/
 See description for installation and usage instructions.
 
 == Changelog ==
+
+= 0.3.0 (May 24th, 2018) =
+* Introduces `--delay-delete` flag to delete old tokens after 15 minutes instead of immediately.
+* Improves invalid token message when user is already logged in: "Invalid one-time login token, but you are logged in as 'user_login'. Go to the dashboard instead?".
 
 = 0.2.0 (May 3rd, 2018) =
 * Introduces support for multiple one-time login links.
