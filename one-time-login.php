@@ -26,7 +26,7 @@
  * default: 1
  * ---
  *
- * [--delayed-delete]
+ * [--delay-delete]
  * : Delete existing tokens after 15 minutes, instead of immediately.
  *
  * ## EXAMPLES
@@ -40,11 +40,11 @@ function one_time_login_wp_cli_command( $args, $assoc_args ) {
 
 	$fetcher = new WP_CLI\Fetchers\User;
 	$user = $fetcher->get_check( $args[0] );
-	$delayed_delete = WP_CLI\Utils\get_flag_value( $assoc_args, 'delayed-delete' );
+	$delay_delete = WP_CLI\Utils\get_flag_value( $assoc_args, 'delay-delete' );
 	$count = (int) $assoc_args['count'];
 	$tokens = $new_tokens = array();
 
-	if ( $delayed_delete ) {
+	if ( $delay_delete ) {
 		$tokens = get_user_meta( $user->ID, 'one_time_login_token', true );
 		$tokens = is_string( $tokens ) ? array( $tokens ) : $tokens;
 		wp_schedule_single_event( time() + ( 15 * MINUTE_IN_SECONDS ), 'one_time_login_cleanup_expired_tokens', array( $user->ID, $tokens ) );
@@ -87,7 +87,7 @@ function one_time_login_cleanup_expired_tokens( $user_id, $expired_tokens ) {
 	}
 	update_user_meta( $user_id, 'one_time_login_token', $new_tokens );
 }
-add_action( 'one_time_login_cleanup_expired_tokens', 'one_time_login_cleanup_expired_tokens' );
+add_action( 'one_time_login_cleanup_expired_tokens', 'one_time_login_cleanup_expired_tokens', 10, 2 );
 
 /**
  * Log a request in as a user if the token is valid.
@@ -103,6 +103,29 @@ function one_time_login_handle_token() {
 		$error = sprintf( __( 'Invalid one-time login token, but you are logged in as \'%s\'. <a href="%s">Go to the dashboard instead</a>?', 'one-time-login' ), wp_get_current_user()->user_login, admin_url() );
 	} else {
 		$error = sprintf( __( 'Invalid one-time login token. <a href="%s">Try signing in instead</a>?', 'one-time-login' ), wp_login_url() );
+	}
+
+	// Ensure any expired crons are run
+	// It would be nice if WP-Cron had an API for this, but alas.
+	$crons = _get_cron_array();
+	if ( ! empty( $crons ) ) {
+		foreach ( $crons as $time => $hooks ) {
+			if ( time() < $time ) {
+				continue;
+			}
+			foreach ( $hooks as $hook => $hook_events ) {
+				if ( 'one_time_login_cleanup_expired_tokens' !== $hook ) {
+					continue;
+				}
+				foreach ( $hook_events as $sig => $data ) {
+					if ( ! defined( 'DOING_CRON' ) ) {
+						define( 'DOING_CRON', true );
+					}
+					do_action_ref_array( $hook, $data['args'] );
+					wp_unschedule_event( $time, $hook, $data['args'] );
+				}
+			}
+		}
 	}
 
 	// Use a generic error message to ensure user ids can't be sniffed
