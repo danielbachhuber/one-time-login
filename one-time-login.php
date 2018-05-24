@@ -87,7 +87,7 @@ function one_time_login_cleanup_expired_tokens( $user_id, $expired_tokens ) {
 	}
 	update_user_meta( $user_id, 'one_time_login_token', $new_tokens );
 }
-add_action( 'one_time_login_cleanup_expired_tokens', 'one_time_login_cleanup_expired_tokens' );
+add_action( 'one_time_login_cleanup_expired_tokens', 'one_time_login_cleanup_expired_tokens', 10, 2 );
 
 /**
  * Log a request in as a user if the token is valid.
