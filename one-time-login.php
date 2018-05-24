@@ -26,7 +26,7 @@
  * default: 1
  * ---
  *
- * [--delayed-delete]
+ * [--delay-delete]
  * : Delete existing tokens after 15 minutes, instead of immediately.
  *
  * ## EXAMPLES
@@ -40,11 +40,11 @@ function one_time_login_wp_cli_command( $args, $assoc_args ) {
 
 	$fetcher = new WP_CLI\Fetchers\User;
 	$user = $fetcher->get_check( $args[0] );
-	$delayed_delete = WP_CLI\Utils\get_flag_value( $assoc_args, 'delayed-delete' );
+	$delay_delete = WP_CLI\Utils\get_flag_value( $assoc_args, 'delay-delete' );
 	$count = (int) $assoc_args['count'];
 	$tokens = $new_tokens = array();
 
-	if ( $delayed_delete ) {
+	if ( $delay_delete ) {
 		$tokens = get_user_meta( $user->ID, 'one_time_login_token', true );
 		$tokens = is_string( $tokens ) ? array( $tokens ) : $tokens;
 		wp_schedule_single_event( time() + ( 15 * MINUTE_IN_SECONDS ), 'one_time_login_cleanup_expired_tokens', array( $user->ID, $tokens ) );
