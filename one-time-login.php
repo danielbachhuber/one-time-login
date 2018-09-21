@@ -44,8 +44,6 @@ function one_time_login_enqueue() {
 
 add_action( 'wp_enqueue_scripts', 'one_time_login_enqueue' );
 
-add_shortcode( 'one-time-login', 'one_time_login_form' );
-
 /**
  * Print simple form template form one time login.
  */
@@ -71,6 +69,8 @@ function one_time_login_form() {
 	);
 }
 
+add_shortcode( 'one-time-login', 'one_time_login_form' );
+
 /**
  * Admin AJAX endpoint for sending an email.
  */
@@ -86,7 +86,7 @@ function callback_send_one_time_login_by_email() {
 		wp_send_json_error( __( 'Invalid format.', 'one-time-login' ) );
 	}
 	send_one_time_login_by_email( $email );
-	wp_send_json_success( 'Login link sent if email is registered.' );
+	wp_send_json_success( __( 'Login link sent if email is registered.', 'one-time-login' ) );
 }
 
 add_action( 'wp_ajax_send_email', 'callback_send_one_time_login_by_email' );
