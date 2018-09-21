@@ -12,6 +12,133 @@
  * @package         One_Time_Login
  */
 
+
+/**
+ * Enqueue and localize scripts for form handler.
+ */
+function one_time_login_enqueue() {
+	wp_register_script(
+		'one-time-login-js',
+		plugin_dir_url( __FILE__ ) . 'login.js'
+	);
+	wp_register_style(
+		'one-time-login-css',
+		plugin_dir_url( __FILE__ ) . 'login.css'
+	);
+	wp_localize_script(
+		'one-time-login-js',
+		'oneTimeLogin',
+		[
+			'ajax_url' => admin_url( 'admin-ajax.php' ),
+			'security' => wp_create_nonce( 'one-time-login-nonce' ),
+		]
+	);
+	wp_enqueue_script(
+		'one-time-login-js'
+	);
+
+	wp_enqueue_style(
+		'one-time-login-css'
+	);
+}
+
+add_action( 'wp_enqueue_scripts', 'one_time_login_enqueue' );
+
+/**
+ * Print simple form template form one time login.
+ */
+function one_time_login_form() {
+	if ( is_user_logged_in() ) {
+		global $wp;
+		return sprintf(
+			'<p>%s <a href="%s">%s</a></p>',
+			__( 'Already logged in.', 'one-time-login' ),
+			esc_url( wp_logout_url( home_url( $wp->request ) ) ),
+			__( 'Logout.', 'one-time-login' )
+		);
+	}
+	$input_id = 'one-time-login-form-' . rand();
+	return sprintf(
+		'<form class="one-time-login-form"><div class="one-time-login-response" style="display: none;">%s</div><label for="%s">%s</label><input id="%s" name="email" placeholder="%s" type="email" required /><input type="submit" value="%s" /> </form>',
+		esc_html( __( 'If an account exists with that address, a login link has been sent.', 'one-time-login' ) ),
+		esc_attr( $input_id ),
+		esc_html( __( 'Email', 'one-time-login' ) ),
+		esc_attr( $input_id ),
+		esc_attr( __( 'Login with your email', 'one-time-login' ) ),
+		esc_attr( __( 'Send link', 'one-time-login' ) )
+	);
+}
+
+add_shortcode( 'one-time-login', 'one_time_login_form' );
+
+/**
+ * Admin AJAX endpoint for sending an email.
+ */
+function callback_send_one_time_login_by_email() {
+	if ( ! isset( $_REQUEST['email'] ) ) {
+		wp_send_json_error( __( 'Invalid request.', 'one-time-login' ) );
+	}
+	if ( ! check_ajax_referer( 'one-time-login-nonce', 'security', false ) ) {
+		wp_send_json_error( __( 'Invalid security token.', 'one-time-login' ) );
+	}
+	$email = sanitize_email( wp_unslash( $_REQUEST['email'] ) );
+	if ( ! is_email( $email ) ) {
+		wp_send_json_error( __( 'Invalid format.', 'one-time-login' ) );
+	}
+	send_one_time_login_by_email( $email );
+	wp_send_json_success( __( 'Login link sent if email is registered.', 'one-time-login' ) );
+}
+
+add_action( 'wp_ajax_send_email', 'callback_send_one_time_login_by_email' );
+add_action( 'wp_ajax_nopriv_send_email', 'callback_send_one_time_login_by_email' );
+
+/**
+ * Send a one time login based on a email.
+ *
+ * @param string $email Email address for the user.
+ */
+function send_one_time_login_by_email( $email ) {
+	$login_url = one_time_login_by_email( $email, true );
+	if ( ! $login_url ) {
+		return;
+	}
+	wp_mail(
+		$email,
+		'Login',
+		$login_url
+	);
+}
+
+/**
+ * Get a one time login based on an email.
+ *
+ * @param string  $email Email address for the user.
+ * @param boolean $delay_delete Delete after 15 mins.
+ * @return mixed Login URL.
+ */
+function one_time_login_by_email( $email, $delay_delete ) {
+	if ( ! is_email( $email ) ) {
+		return false;
+	}
+	$user = get_user_by( 'email', $email );
+	if ( ! $user ) {
+		return false;
+	}
+	$password = wp_generate_password();
+	$token = sha1( $password );
+	update_user_meta( $user->ID, 'one_time_login_token', $token );
+	if ( $delay_delete ) {
+		wp_schedule_single_event( time() + ( 15 * MINUTE_IN_SECONDS ), 'one_time_login_cleanup_expired_tokens', array( $user->ID, [ $token ] ) );
+	}
+	do_action( 'one_time_login_created', $user );
+	$query_args = array(
+		'user_id'              => $user->ID,
+		'one_time_login_token' => $token,
+	);
+	$login_url = add_query_arg( $query_args, wp_login_url() );
+	return $login_url;
+}
+
 /**
  * Generate a one-time login URL for any user.
  *

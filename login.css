@@ -1,0 +1,8 @@
+.one-time-login-form {
+    display: flex;
+    justify-content: space-between;
+}
+
+.one-time-login-form label{
+    display: none;
+}

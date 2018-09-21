@@ -1,0 +1,5 @@
+{
+  "name": "davisshaver/one-time-login",
+  "description": "Composer wrapper for plugin",
+  "type": "wordpress-plugin"
+}
