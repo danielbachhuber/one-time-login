@@ -51,8 +51,9 @@ add_shortcode( 'one-time-login', 'one_time_login_form' );
  */
 function one_time_login_form() {
 	if ( is_user_logged_in() ) {
+		global $wp;
 		return sprintf(
-			'<p>%s <a href="%s">%s</a>.</p>',
+			'<p>%s <a href="%s">%s</a></p>',
 			__( 'Already logged in.', 'one-time-login' ),
 			esc_url( wp_logout_url( home_url( $wp->request ) ) ),
 			__( 'Logout.', 'one-time-login' )
