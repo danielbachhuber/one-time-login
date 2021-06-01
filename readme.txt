@@ -2,8 +2,8 @@
 Contributors: danielbachhuber
 Tags: login
 Requires at least: 4.4
-Tested up to: 5.4
-Stable tag: 0.3.0
+Tested up to: 5.7
+Stable tag: 0.3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,6 +30,9 @@ Feel free to [file issues and pull requests](https://github.com/danielbachhuber/
 See description for installation and usage instructions.
 
 == Changelog ==
+
+= 0.3.1 (June 1st, 2021) =
+* Fires `one_time_login_after_auth_cookie_set` action after the auth cookie is set [[#27](https://github.com/danielbachhuber/one-time-login/pull/27)].
 
 = 0.3.0 (May 24th, 2018) =
 * Introduces `--delay-delete` flag to delete old tokens after 15 minutes instead of immediately.
