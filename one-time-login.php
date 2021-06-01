@@ -152,6 +152,7 @@ function one_time_login_handle_token() {
 	do_action( 'one_time_login_logged_in', $user );
 	update_user_meta( $user->ID, 'one_time_login_token', $tokens );
 	wp_set_auth_cookie( $user->ID, true, is_ssl() );
+	do_action( 'one_time_login_after_auth_cookie_set', $user );
 	wp_safe_redirect( admin_url() );
 	exit;
 }
