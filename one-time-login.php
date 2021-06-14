@@ -13,36 +13,17 @@
  */
 
 /**
- * Generate a one-time login URL for any user.
+ * Generate one or multiple one-time login URL(s) for any user.
  *
- * ## OPTIONS
+ * @param WP_User $user        ID, email address, or user login for the user.
+ * @param int $count           Generate a specified number of login tokens (default: 1).
+ * @param bool $delay_delete   Delete existing tokens after 15 minutes, instead of immediately.
  *
- * <user>
- * : ID, email address, or user login for the user.
- *
- * [--count=<count>]
- * : Generate a specified number of login tokens.
- * ---
- * default: 1
- * ---
- *
- * [--delay-delete]
- * : Delete existing tokens after 15 minutes, instead of immediately.
- *
- * ## EXAMPLES
- *
- *     # Generate two one-time login URLs.
- *     $ wp user one-time-login testuser --count=2
- *     http://wpdev.test/wp-login.php?user_id=2&one_time_login_token=ebe62e3
- *     http://wpdev.test/wp-login.php?user_id=2&one_time_login_token=eb41c77
+ * @return array
  */
-function one_time_login_wp_cli_command( $args, $assoc_args ) {
-
-	$fetcher = new WP_CLI\Fetchers\User;
-	$user = $fetcher->get_check( $args[0] );
-	$delay_delete = WP_CLI\Utils\get_flag_value( $assoc_args, 'delay-delete' );
-	$count = (int) $assoc_args['count'];
+function one_time_login_generate_tokens( WP_User $user, $delay_delete, $count ) {
 	$tokens = $new_tokens = array();
+	$login_urls = array();
 
 	if ( $delay_delete ) {
 		$tokens = get_user_meta( $user->ID, 'one_time_login_token', true );
@@ -64,7 +45,40 @@ function one_time_login_wp_cli_command( $args, $assoc_args ) {
 			'user_id'              => $user->ID,
 			'one_time_login_token' => $token,
 		);
-		$login_url = add_query_arg( $query_args, wp_login_url() );
+		$login_urls[] = add_query_arg( $query_args, wp_login_url() );
+	}
+
+	return $login_urls;
+}
+
+/**
+ * Generate one-time tokens using WP CLI.
+ *
+ * ## OPTIONS
+ *
+ * <user>
+ * [--count=<count>]
+ * [--delay-delete]
+ *
+ * ## EXAMPLES
+ *
+ *     # Generate two one-time login URLs.
+ *     $ wp user one-time-login testuser --count=2
+ *     http://wpdev.test/wp-login.php?user_id=2&one_time_login_token=ebe62e3
+ *     http://wpdev.test/wp-login.php?user_id=2&one_time_login_token=eb41c77
+ *
+ * @param array $args
+ * @param array $assoc_args
+ */
+function one_time_login_wp_cli_command( $args, $assoc_args ) {
+
+	$fetcher = new WP_CLI\Fetchers\User;
+	$user = $fetcher->get_check( $args[0] );
+	$delay_delete = WP_CLI\Utils\get_flag_value( $assoc_args, 'delay-delete' );
+	$count = (int) $assoc_args['count'];
+
+	$login_urls = one_time_login_generate_tokens( $user, $delay_delete, $count );
+	foreach ( $login_urls as $login_url ) {
 		WP_CLI::log( $login_url );
 	}
 }
@@ -74,7 +88,66 @@ if ( class_exists( 'WP_CLI' ) ) {
 }
 
 /**
+ * Generate one-time tokens using WP CLI.
+ *
+ * ## OPTIONS
+ *
+ * /count/<count>/
+ * /delay-delete/<0 or 1>
+ *
+ * ## EXAMPLES
+ *
+ *     # Generate two one-time login URLs.
+ *     curl --user "admin:RrcZY8bDQBpT7CYrkYk8e9k7" http://localhost:8889/wp-json/user/one-time-login/v1/token
+ *     http://wpdev.test/wp-login.php?user_id=2&one_time_login_token=ebe62e3
+ *     http://wpdev.test/wp-login.php?user_id=2&one_time_login_token=eb41c77
+ *
+ * @param WP_REST_Request $request
+ *
+ * @return WP_REST_Response
+ */
+function one_time_login_api_request( WP_REST_Request $request ) {
+	$parameters = json_decode( $request->get_body(), true );
+	$login_urls = array();
+
+	if ( isset( $parameters['user'] ) ) {
+		$user = get_user_by( 'login', $parameters['user'] );
+		$delay_delete = ( boolean ) ( $parameters['delay_delete'] ?? false );
+		$count = ( int ) ( $parameters['count'] ?? 1 );
+
+		$login_urls = one_time_login_generate_tokens( $user, $delay_delete, $count );
+	}
+	return new WP_REST_Response( $login_urls );
+}
+add_action( 'rest_api_init', function () {
+	register_rest_route( 'user/one-time-login/v1', '/token', array(
+		array(
+			'methods'  => WP_REST_Server::CREATABLE,
+			'callback' => 'one_time_login_api_request',
+			'args' => array(
+				'user' => array(),
+				'count' => array(
+					'required'          => false,
+					'validate_callback' => function ( $param, $request, $key ) {
+						return is_numeric( $param );
+					}
+				),
+				'delay_delete' => array(
+					'required'          => false,
+					'validate_callback' => function ( $param, $request, $key ) {
+						return is_numeric( $param );
+					}
+				),
+			),
+		),
+	) );
+} );
+
+/**
  * Handle cleanup process for expired one-time login tokens.
+ *
+ * @param int $user_id
+ * @param array $expired_tokens
  */
 function one_time_login_cleanup_expired_tokens( $user_id, $expired_tokens ) {
 	$tokens = get_user_meta( $user_id, 'one_time_login_token', true );
