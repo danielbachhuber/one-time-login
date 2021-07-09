@@ -1,5 +1,5 @@
 === One Time Login ===
-Contributors: danielbachhuber
+Contributors: danielbachhuber, aaronjorbin, angelocali, gdespoulain
 Tags: login
 Requires at least: 4.4
 Tested up to: 5.7
@@ -11,17 +11,50 @@ Use WP-CLI to generate a one-time login URL for any user
 
 == Description ==
 
-Need access to a WordPress install but don't want to create a new user account? Use this plugin and WP-CLI to generate a one-time login URL for any existing user:
+Need access to a WordPress install but don't want to create a new user account? Use this plugin to generate one-time login URLs for any existing user.
+Then, copy the URL, paste it into your web browser, and... voila!
 
-    wp plugin install one-time-login --activate && wp user one-time-login <user>
+Because they are one-time login URLs, they will only work once. If you need access again, you'll need to run the WP-CLI command again.
+
+=== Using WP CLI to generate OTT URLs ===
+
+==== Example ====
+
+    wp plugin install one-time-login --activate && wp user one-time-login <user> --count=3 --delay-delete
 
 After you run the command above, you'll see a success message like this:
 
-    http://wpdev.test/wp-login.php?user_id=2&one_time_login_token=ebe62e3
+    http://wpdev.test/wp-login.php?user_id=2&one_time_login_token=93974b48e3a418b895fc7ca476f1a607d8b99345
 
-Copy the URL, paste it into your web browser, and... voila!
+Or like this if you asked for more than one:
 
-Because it's a one-time login URL, it will only work once. If you need access again, you'll need to run the WP-CLI command again.
+	http://wpdev.test/wp-login.php?user_id=1&one_time_login_token=2b9c6f5d71d51d530e397ee9da3b50e4e3dd06e7
+	http://wpdev.test/wp-login.php?user_id=1&one_time_login_token=90897da439a116c613fc1c49c372e6b1f7c72ad8
+	http://wpdev.test/wp-login.php?user_id=1&one_time_login_token=68c8074743de849db606500c3caa39a7432dc601
+
+==== Parameters ====
+
+* *count*: Generate more than one login token (default: 1);
+* *delay-delete*: Delete existing tokens after 15 minutes, instead of immediately.
+
+=== Using WP API to generate OTT URLs ===
+
+==== Example with cUrl ====
+
+	curl -X POST \
+		http://wpdev.test/wp-json/user/one-time-login/v1/token
+		-H 'authorization: Basic YWRtaW46eFRQeUJ5c3hEckhkY3BNYjE2endiQ2tj'
+		-H 'cache-control: no-cache'
+		-H 'postman-token: 8dcfa79a-401a-2c7d-c593-703e683ce785'
+		-d '{
+			"user":"admin",
+			"count": 3,
+			"delay-delete": true
+		}'
+
+==== Parameters ====
+
+Just as with WP CLI, you can add the **count** and **delay_delete** parameters to your call.
 
 Feel free to [file issues and pull requests](https://github.com/danielbachhuber/one-time-login) against the project on Github.
 
