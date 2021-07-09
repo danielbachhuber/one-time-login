@@ -15,13 +15,13 @@
 /**
  * Generate one or multiple one-time login URL(s) for any user.
  *
- * @param WP_User $user        ID, email address, or user login for the user.
+ * @param \WP_User|null $user  ID, email address, or user login for the user.
  * @param int $count           Generate a specified number of login tokens (default: 1).
  * @param bool $delay_delete   Delete existing tokens after 15 minutes, instead of immediately.
  *
  * @return array
  */
-function one_time_login_generate_tokens( WP_User $user, $delay_delete, $count ) {
+function one_time_login_generate_tokens( $user, $delay_delete, $count ) {
 	$tokens = $new_tokens = array();
 	$login_urls = array();
 
