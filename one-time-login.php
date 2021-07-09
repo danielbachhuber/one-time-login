@@ -71,11 +71,10 @@ function one_time_login_generate_tokens( WP_User $user, $delay_delete, $count ) 
  * @param array $assoc_args
  */
 function one_time_login_wp_cli_command( $args, $assoc_args ) {
-
 	$fetcher = new WP_CLI\Fetchers\User;
 	$user = $fetcher->get_check( $args[0] );
 	$delay_delete = WP_CLI\Utils\get_flag_value( $assoc_args, 'delay-delete' );
-	$count = (int) $assoc_args['count'];
+	$count = (int) ( $assoc_args['count'] ?? 1 );
 
 	$login_urls = one_time_login_generate_tokens( $user, $delay_delete, $count );
 	foreach ( $login_urls as $login_url ) {
@@ -117,16 +116,18 @@ function one_time_login_api_request( WP_REST_Request $request ) {
 
 		$login_urls = one_time_login_generate_tokens( $user, $delay_delete, $count );
 	}
+
 	return new WP_REST_Response( $login_urls );
 }
+
 add_action( 'rest_api_init', function () {
 	register_rest_route( 'user/one-time-login/v1', '/token', array(
 		array(
 			'methods'  => WP_REST_Server::CREATABLE,
 			'callback' => 'one_time_login_api_request',
-			'args' => array(
-				'user' => array(),
-				'count' => array(
+			'args'     => array(
+				'user'         => array(),
+				'count'        => array(
 					'required'          => false,
 					'validate_callback' => function ( $param, $request, $key ) {
 						return is_numeric( $param );
@@ -160,6 +161,7 @@ function one_time_login_cleanup_expired_tokens( $user_id, $expired_tokens ) {
 	}
 	update_user_meta( $user_id, 'one_time_login_token', $new_tokens );
 }
+
 add_action( 'one_time_login_cleanup_expired_tokens', 'one_time_login_cleanup_expired_tokens', 10, 2 );
 
 /**
@@ -229,4 +231,5 @@ function one_time_login_handle_token() {
 	wp_safe_redirect( admin_url() );
 	exit;
 }
+
 add_action( 'init', 'one_time_login_handle_token' );
