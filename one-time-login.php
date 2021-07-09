@@ -25,27 +25,29 @@ function one_time_login_generate_tokens( $user, $delay_delete, $count ) {
 	$tokens = $new_tokens = array();
 	$login_urls = array();
 
-	if ( $delay_delete ) {
-		$tokens = get_user_meta( $user->ID, 'one_time_login_token', true );
-		$tokens = is_string( $tokens ) ? array( $tokens ) : $tokens;
-		wp_schedule_single_event( time() + ( 15 * MINUTE_IN_SECONDS ), 'one_time_login_cleanup_expired_tokens', array( $user->ID, $tokens ) );
-	}
+	if ( $user instanceof \WP_User ) {
+		if ( $delay_delete ) {
+			$tokens = get_user_meta( $user->ID, 'one_time_login_token', true );
+			$tokens = is_string( $tokens ) ? array( $tokens ) : $tokens;
+			wp_schedule_single_event( time() + ( 15 * MINUTE_IN_SECONDS ), 'one_time_login_cleanup_expired_tokens', array( $user->ID, $tokens ) );
+		}
 
-	for ( $i = 0; $i < $count; $i++ ) {
-		$password = wp_generate_password();
-		$token = sha1( $password );
-		$tokens[] = $token;
-		$new_tokens[] = $token;
-	}
+		for ( $i = 0; $i < $count; $i++ ) {
+			$password = wp_generate_password();
+			$token = sha1( $password );
+			$tokens[] = $token;
+			$new_tokens[] = $token;
+		}
 
-	update_user_meta( $user->ID, 'one_time_login_token', $tokens );
-	do_action( 'one_time_login_created', $user );
-	foreach ( $new_tokens as $token ) {
-		$query_args = array(
-			'user_id'              => $user->ID,
-			'one_time_login_token' => $token,
-		);
-		$login_urls[] = add_query_arg( $query_args, wp_login_url() );
+		update_user_meta( $user->ID, 'one_time_login_token', $tokens );
+		do_action( 'one_time_login_created', $user );
+		foreach ( $new_tokens as $token ) {
+			$query_args = array(
+				'user_id'              => $user->ID,
+				'one_time_login_token' => $token,
+			);
+			$login_urls[] = add_query_arg( $query_args, wp_login_url() );
+		}
 	}
 
 	return $login_urls;
