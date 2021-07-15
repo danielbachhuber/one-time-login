@@ -15,7 +15,7 @@
 /**
  * Generate one or multiple one-time login URL(s) for any user.
  *
- * @param \WP_User|null $user  ID, email address, or user login for the user.
+ * @param WP_User|null $user  ID, email address, or user login for the user.
  * @param int $count           Generate a specified number of login tokens (default: 1).
  * @param bool $delay_delete   Delete existing tokens after 15 minutes, instead of immediately.
  *
@@ -25,7 +25,7 @@ function one_time_login_generate_tokens( $user, $delay_delete, $count ) {
 	$tokens = $new_tokens = array();
 	$login_urls = array();
 
-	if ( $user instanceof \WP_User ) {
+	if ( $user instanceof WP_User ) {
 		if ( $delay_delete ) {
 			$tokens = get_user_meta( $user->ID, 'one_time_login_token', true );
 			$tokens = is_string( $tokens ) ? array( $tokens ) : $tokens;
@@ -142,6 +142,9 @@ add_action( 'rest_api_init', function () {
 					}
 				),
 			),
+			'permission_callback' => function () {
+				return current_user_can( 'administrator' );
+			},
 		),
 	) );
 } );
