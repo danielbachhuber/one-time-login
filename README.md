@@ -42,7 +42,7 @@ Or like this if you asked for more than one:
 #### Example with cUrl
 
 	curl -X POST \
-		http://wpdev.test/wp-json/user/one-time-login/v1/token
+		http://wpdev.test/wp-json/one-time-login/v1/token
 		-H 'authorization: Basic YWRtaW46eFRQeUJ5c3hEckhkY3BNYjE2endiQ2tj'
 		-H 'cache-control: no-cache'
 		-H 'postman-token: 8dcfa79a-401a-2c7d-c593-703e683ce785'

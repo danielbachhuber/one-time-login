@@ -99,7 +99,7 @@ if ( class_exists( 'WP_CLI' ) ) {
  * ## EXAMPLES
  *
  *     # Generate two one-time login URLs.
- *     curl --user "admin:RrcZY8bDQBpT7CYrkYk8e9k7" http://localhost:8889/wp-json/user/one-time-login/v1/token
+ *     curl --user "admin:RrcZY8bDQBpT7CYrkYk8e9k7" http://localhost:8889/wp-json/one-time-login/v1/token
  *     http://wpdev.test/wp-login.php?user_id=2&one_time_login_token=ebe62e3
  *     http://wpdev.test/wp-login.php?user_id=2&one_time_login_token=eb41c77
  *
@@ -123,7 +123,7 @@ function one_time_login_api_request( WP_REST_Request $request ) {
 }
 
 add_action( 'rest_api_init', function () {
-	register_rest_route( 'user/one-time-login/v1', '/token', array(
+	register_rest_route( 'one-time-login/v1', '/token', array(
 		array(
 			'methods'  => WP_REST_Server::CREATABLE,
 			'callback' => 'one_time_login_api_request',
