@@ -1,5 +1,5 @@
 === One Time Login ===
-Contributors: danielbachhuber, aaronjorbin, angelocali, gdespoulain
+Contributors: danielbachhuber, aaronjorbin, acali, gdespoulain
 Tags: login
 Requires at least: 4.4
 Tested up to: 5.7
