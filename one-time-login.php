@@ -122,7 +122,7 @@ function one_time_login_api_request( WP_REST_Request $request ) {
 	return new WP_REST_Response( $login_urls );
 }
 
-add_action( 'rest_api_init', function () {
+function one_time_login_rest_api_init() {
 	register_rest_route( 'one-time-login/v1', '/token', array(
 		array(
 			'methods'  => WP_REST_Server::CREATABLE,
@@ -147,7 +147,9 @@ add_action( 'rest_api_init', function () {
 			},
 		),
 	) );
-} );
+}
+
+add_action( 'rest_api_init', 'one_time_login_rest_api_init' );
 
 /**
  * Handle cleanup process for expired one-time login tokens.
