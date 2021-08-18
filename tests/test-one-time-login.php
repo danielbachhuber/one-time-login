@@ -31,6 +31,35 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test the REST API call for token generation depending on user
+	 * @dataProvider rest_api_provider
+	 *
+	 * @param WP_User $user
+	 * @param string $status
+	 */
+	public function test_rest_api_authorization( $user, $status ) {
+		if ( $user ) {
+			wp_set_current_user( $user->ID );
+		}
+
+		$request = new WP_REST_Request( 'POST', '/wp-jon/one-time-login/v1/token' );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( $status, $response->get_status() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function rest_api_provider() {
+		return array(
+			array( self::$users['administrator'], 200 ),
+			array( self::$users['editor'], 403 ),
+			array( null, 403 ),
+		);
+	}
+
+	/**
 	 * Test one_time_login_generate_tokens()
 	 * @dataProvider token_data_provider
 	 *
@@ -45,7 +74,7 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 		);
 		$this->assertSame(
 			count( one_time_login_generate_tokens( self::$users['editor'], $delay_delete, $count ) ),
-			$generated_count
+			0
 		);
 		$this->assertSame(
 			count( one_time_login_generate_tokens( null, $delay_delete, $count ) ),
