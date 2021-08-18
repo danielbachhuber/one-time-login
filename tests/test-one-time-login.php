@@ -42,7 +42,7 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 			wp_set_current_user( $user->ID );
 		}
 
-		$request = new WP_REST_Request( 'POST', '/wp-jon/one-time-login/v1/token' );
+		$request = new WP_REST_Request( 'POST', '/wp-json/one-time-login/v1/token' );
 		$response = rest_get_server()->dispatch( $request );
 
 		$this->assertSame( $status, $response->get_status() );
