@@ -34,12 +34,12 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 	 * Test the REST API call for token generation depending on user
 	 * @dataProvider rest_api_provider
 	 *
-	 * @param WP_User $user
+	 * @param string $user
 	 * @param int $status
 	 */
 	public function test_rest_api_authorization( $user, $status ) {
-		if ( $user instanceof WP_User ) {
-			wp_set_current_user( $user->ID );
+		if ( array_key_exists( $user, self::$users ) ) {
+			wp_set_current_user( self::$users[ $user ]->ID );
 
 			var_dump( 'CURRENT_USER:' );
 			var_dump( wp_get_current_user()->user_login );
@@ -63,9 +63,9 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 	 */
 	public function rest_api_provider() {
 		return array(
-			array( self::$users['administrator'], 200 ),
-			array( self::$users['editor'], 401 ),
-			array( null, 401 ),
+			array( 'administrator', 200 ),
+			array( 'editor', 401 ),
+			array( 'unexisting_user', 401 ),
 		);
 	}
 
