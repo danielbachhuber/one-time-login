@@ -40,11 +40,6 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 	public function test_rest_api_authorization( $user, $status ) {
 		if ( array_key_exists( $user, self::$users ) ) {
 			wp_set_current_user( self::$users[ $user ]->ID );
-
-			var_dump( 'CURRENT_USER:' );
-			var_dump( wp_get_current_user()->user_login );
-			var_dump( 'CURRENT_USER_CAN:' );
-			var_dump( current_user_can('administrator' ) );
 		}
 
 		$request = new WP_REST_Request(
@@ -64,7 +59,7 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 	public function rest_api_provider() {
 		return array(
 			array( 'administrator', 200 ),
-			array( 'editor', 401 ),
+			array( 'editor', 403 ),
 			array( 'unexisting_user', 401 ),
 		);
 	}
