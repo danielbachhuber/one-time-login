@@ -11,7 +11,7 @@
 class OneTimeLoginTest extends WP_UnitTestCase {
 
 	/**
-	 * @var array
+	 * @var WP_User[]
 	 */
 	protected static $users = array(
 		'administrator' => null,
@@ -42,7 +42,12 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 			wp_set_current_user( $user->ID );
 		}
 
-		$request = new WP_REST_Request( 'POST', '/wp-json/one-time-login/v1/token' );
+		$request = new WP_REST_Request(
+			WP_REST_Server::CREATABLE,
+			'/one-time-login/v1/token'
+		);
+		$request->add_header( 'content-type', 'application/json' );
+		$request->set_body( wp_json_encode( array( 'user' => self::$users['editor']->user_login ) ) );
 		$response = rest_get_server()->dispatch( $request );
 
 		$this->assertSame( $status, $response->get_status() );
@@ -74,7 +79,7 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 		);
 		$this->assertSame(
 			count( one_time_login_generate_tokens( self::$users['editor'], $delay_delete, $count ) ),
-			0
+			$generated_count
 		);
 		$this->assertSame(
 			count( one_time_login_generate_tokens( null, $delay_delete, $count ) ),
