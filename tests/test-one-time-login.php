@@ -16,7 +16,7 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 	protected static $users = array(
 		'administrator' => null,
 		'editor'        => null,
-		'ex_user'       => null
+		'other_user'    => null
 	);
 
 	/**
@@ -28,7 +28,7 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 		self::$users = array(
 			'administrator' => $factory->user->create_and_get( array( 'role' => 'administrator' ) ),
 			'editor'        => $factory->user->create_and_get( array( 'role' => 'editor' ) ),
-			'ex_user'       => $factory->user->create_and_get( array( 'role' => 'editor' ) )
+			'other_user'    => $factory->user->create_and_get( array( 'role' => 'editor' ) )
 		);
 	}
 
@@ -49,7 +49,7 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 			'/one-time-login/v1/token'
 		);
 		$request->add_header( 'content-type', 'application/json' );
-		$request->set_body( wp_json_encode( array( 'user' => self::$users['ex_user']->user_login ) ) );
+		$request->set_body( wp_json_encode( array( 'user' => self::$users['other_user']->user_login ) ) );
 		$response = rest_get_server()->dispatch( $request );
 
 		$this->assertSame( $status, $response->get_status() );
@@ -60,8 +60,13 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 	 */
 	public function rest_api_provider() {
 		return array(
+			// Admin (who can edit any user)
 			array( 'administrator', 200 ),
+			// User generating tokens for himself
+			array( 'other_user', 200 ),
+			// Editor (can't edit other users)
 			array( 'editor', 403 ),
+			// Unauthenticated
 			array( 'unexisting_user', 401 ),
 		);
 	}
