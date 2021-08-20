@@ -15,7 +15,8 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 	 */
 	protected static $users = array(
 		'administrator' => null,
-		'editor'        => null
+		'editor'        => null,
+		'ex_user'       => null
 	);
 
 	/**
@@ -26,7 +27,8 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 	public static function wpSetUpBeforeClass( $factory ) {
 		self::$users = array(
 			'administrator' => $factory->user->create_and_get( array( 'role' => 'administrator' ) ),
-			'editor'        => $factory->user->create_and_get( array( 'role' => 'editor' ) )
+			'editor'        => $factory->user->create_and_get( array( 'role' => 'editor' ) ),
+			'ex_user'       => $factory->user->create_and_get( array( 'role' => 'editor' ) )
 		);
 	}
 
@@ -47,7 +49,7 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 			'/one-time-login/v1/token'
 		);
 		$request->add_header( 'content-type', 'application/json' );
-		$request->set_body( wp_json_encode( array( 'user' => self::$users['editor']->user_login ) ) );
+		$request->set_body( wp_json_encode( array( 'user' => self::$users['ex_user']->user_login ) ) );
 		$response = rest_get_server()->dispatch( $request );
 
 		$this->assertSame( $status, $response->get_status() );
