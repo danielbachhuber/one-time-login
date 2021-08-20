@@ -142,8 +142,14 @@ function one_time_login_rest_api_init() {
 					}
 				),
 			),
-			'permission_callback' => function () {
-				return current_user_can( 'administrator' );
+			'permission_callback' => function ( WP_REST_Request $request ) {
+				$body_params = json_decode( $request->get_body(), true );
+
+				if ( array_key_exists( 'user', $body_params ) ) {
+					$user = get_user_by( 'login', $body_params['user'] );
+					return current_user_can( 'edit_user', $user->ID );
+				}
+				return false;
 			},
 		),
 	) );
