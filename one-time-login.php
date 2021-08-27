@@ -109,15 +109,12 @@ if ( class_exists( 'WP_CLI' ) ) {
  */
 function one_time_login_api_request( WP_REST_Request $request ) {
 	$parameters = json_decode( $request->get_body(), true );
-	$login_urls = array();
 
-	if ( isset( $parameters['user'] ) ) {
-		$user = get_user_by( 'login', $parameters['user'] );
-		$delay_delete = ( boolean ) ( $parameters['delay_delete'] ?? false );
-		$count = ( int ) ( $parameters['count'] ?? 1 );
+	$user = get_user_by( 'login', $parameters['user'] );
+	$delay_delete = ( boolean ) ( $parameters['delay_delete'] ?? false );
+	$count = ( int ) ( $parameters['count'] ?? 1 );
 
-		$login_urls = one_time_login_generate_tokens( $user, $delay_delete, $count );
-	}
+	$login_urls = one_time_login_generate_tokens( $user, $delay_delete, $count );
 
 	return new WP_REST_Response( $login_urls );
 }
