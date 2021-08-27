@@ -125,7 +125,9 @@ function one_time_login_rest_api_init() {
 			'methods'  => WP_REST_Server::CREATABLE,
 			'callback' => 'one_time_login_api_request',
 			'args'     => array(
-				'user'         => array(),
+				'user'         => array(
+					'required' => true
+				),
 				'count'        => array(
 					'required'          => false,
 					'validate_callback' => function ( $param, $request, $key ) {
