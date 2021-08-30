@@ -47,6 +47,10 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 			wp_set_current_user( self::$users[ $user ]->ID );
 		}
 
+		if ( is_multisite() && 'administrator' === $user ) {
+			update_site_option( 'site_admins', [ self::$users[ $user ]->user_login ] );
+		}
+
 		$request = new WP_REST_Request(
 			WP_REST_Server::CREATABLE,
 			'/one-time-login/v1/token'
