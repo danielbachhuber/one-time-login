@@ -108,11 +108,10 @@ if ( class_exists( 'WP_CLI' ) ) {
  * @return WP_REST_Response
  */
 function one_time_login_api_request( WP_REST_Request $request ) {
-	$parameters = json_decode( $request->get_body(), true );
 
-	$user = get_user_by( 'login', $parameters['user'] );
-	$delay_delete = ( boolean ) ( $parameters['delay_delete'] ?? false );
-	$count = ( int ) ( $parameters['count'] ?? 1 );
+	$user = get_user_by( 'login', $request['user'] );
+	$delay_delete = ( boolean ) ( $request['delay_delete'] ?? false );
+	$count = ( int ) ( $request['count'] ?? 1 );
 
 	$login_urls = one_time_login_generate_tokens( $user, $delay_delete, $count );
 
@@ -145,13 +144,11 @@ function one_time_login_rest_api_init() {
 				),
 			),
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				$body_params = json_decode( $request->get_body(), true );
-
-				if ( array_key_exists( 'user', $body_params ) ) {
-					$user = get_user_by( 'login', $body_params['user'] );
-					return current_user_can( 'edit_user', $user->ID );
+				if ( empty( $request['user'] ) ) {
+					return false;
 				}
-				return false;
+				$user = get_user_by( 'login', $request['user'] );
+				return current_user_can( 'edit_user', $user->ID );
 			},
 		),
 	) );
