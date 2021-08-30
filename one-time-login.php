@@ -7,7 +7,7 @@
  * Author URI:      https://danielbachhuber.com
  * Text Domain:     one-time-login
  * Domain Path:     /languages
- * Version:         0.3.1
+ * Version:         0.4.0
  *
  * @package         One_Time_Login
  */
