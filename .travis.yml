@@ -6,10 +6,6 @@ notifications:
     on_success: never
     on_failure: change
 
-branches:
-  only:
-    - master
-
 php:
   - 7.2
 
@@ -18,7 +14,7 @@ env:
 
 before_script:
   - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
-  - composer global require "phpunit/phpunit=5.6.*"
+  - composer global require "phpunit/phpunit=6.*"
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
 
 script: phpunit
