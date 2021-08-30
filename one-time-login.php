@@ -21,7 +21,7 @@
  *
  * @return array
  */
-function one_time_login_generate_tokens( $user, $delay_delete, $count ) {
+function one_time_login_generate_tokens( $user, $count, $delay_delete ) {
 	$tokens = $new_tokens = array();
 	$login_urls = array();
 
@@ -78,7 +78,7 @@ function one_time_login_wp_cli_command( $args, $assoc_args ) {
 	$delay_delete = WP_CLI\Utils\get_flag_value( $assoc_args, 'delay-delete' );
 	$count = (int) ( $assoc_args['count'] ?? 1 );
 
-	$login_urls = one_time_login_generate_tokens( $user, $delay_delete, $count );
+	$login_urls = one_time_login_generate_tokens( $user, $count, $delay_delete );
 	foreach ( $login_urls as $login_url ) {
 		WP_CLI::log( $login_url );
 	}
@@ -113,7 +113,7 @@ function one_time_login_api_request( WP_REST_Request $request ) {
 	$delay_delete = ( boolean ) ( $request['delay_delete'] ?? false );
 	$count = ( int ) ( $request['count'] ?? 1 );
 
-	$login_urls = one_time_login_generate_tokens( $user, $delay_delete, $count );
+	$login_urls = one_time_login_generate_tokens( $user, $count, $delay_delete );
 
 	return new WP_REST_Response( $login_urls );
 }
