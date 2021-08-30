@@ -21,18 +21,6 @@ jobs:
           key: v1-dependencies-{{ checksum "composer.lock" }}
           paths:
             - vendor
-      - restore_cache:
-          keys:
-            - node-v1-{{ checksum "package-lock.json" }}
-      - run: npm install
-      - save_cache:
-          key: node-v1-{{ checksum "package-lock.json" }}
-          paths:
-            - node_modules
-      - run:
-          name: "Run JS Lint"
-          command: |
-            npm run lint
       - run:
           name: "Run PHP Lint"
           command: |
@@ -54,15 +42,6 @@ jobs:
           key: v1-dependencies-{{ checksum "composer.lock" }}
           paths:
             - vendor
-      - restore_cache:
-          keys:
-            - node-v1-{{ checksum "package-lock.json" }}
-      - run: npm install
-      - save_cache:
-          key: node-v1-{{ checksum "package-lock.json" }}
-          paths:
-            - node_modules
-      - run: npm run prod
       - run:
           name: "Install Extras"
           command: |
