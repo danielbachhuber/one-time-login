@@ -1,11 +1,12 @@
 # One Time Login #
-**Contributors:** danielbachhuber, aaronjorbin, angelocali, gdespoulain
-**Tags:** login
-**Requires at least:** 4.4
-**Tested up to:** 5.7
-**Stable tag:** 0.3.1
-**License:** GPLv2 or later
-**License URI:** http://www.gnu.org/licenses/gpl-2.0.html
+**Contributors:** danielbachhuber, aaronjorbin, acali, gdespoulain  
+**Tags:** login  
+**Requires at least:** 4.4  
+**Tested up to:** 5.8  
+**Stable tag:** 0.4.0  
+**Requires PHP:** 7.1  
+**License:** GPLv2 or later  
+**License URI:** http://www.gnu.org/licenses/gpl-2.0.html  
 
 Use WP-CLI to generate a one-time login URL for any user
 
@@ -16,9 +17,9 @@ Then, copy the URL, paste it into your web browser, and... voila!
 
 Because they are one-time login URLs, they will only work once. If you need access again, you'll need to run the WP-CLI command again.
 
-### Using WP CLI to generate OTT URLs
+# Using WP CLI to generate OTT URLs #
 
-#### Example
+==== Example ====
 
     wp plugin install one-time-login --activate && wp user one-time-login <user> --count=3 --delay-delete
 
@@ -32,18 +33,27 @@ Or like this if you asked for more than one:
 	http://wpdev.test/wp-login.php?user_id=1&one_time_login_token=90897da439a116c613fc1c49c372e6b1f7c72ad8
 	http://wpdev.test/wp-login.php?user_id=1&one_time_login_token=68c8074743de849db606500c3caa39a7432dc601
 
-#### Parameters
+==== Parameters ====
 
 * *count*: Generate more than one login token (default: 1);
 * *delay-delete*: Delete existing tokens after 15 minutes, instead of immediately.
 
-### Using WP API to generate OTT URLs
+# Using WP API to generate OTT URLs #
 
-#### Example with cUrl
+==== Example with cUrl ====
 
-	curl -X POST -u <user>:<password> http://wpdev.test/wp-json/one-time-login/v1/token -d '{ "user":"admin", "count": 3, "delay-delete": true }'
+	curl -X POST \
+		http://wpdev.test/wp-json/one-time-login/v1/token
+		-H 'authorization: Basic YWRtaW46eFRQeUJ5c3hEckhkY3BNYjE2endiQ2tj'
+		-H 'cache-control: no-cache'
+		-H 'postman-token: 8dcfa79a-401a-2c7d-c593-703e683ce785'
+		-d '{
+			"user":"admin",
+			"count": 3,
+			"delay-delete": true
+		}'
 
-#### Parameters
+==== Parameters ====
 
 Just as with WP CLI, you can add the **count** and **delay_delete** parameters to your call.
 
@@ -54,6 +64,9 @@ Feel free to [file issues and pull requests](https://github.com/danielbachhuber/
 See description for installation and usage instructions.
 
 ## Changelog ##
+
+### 0.4.0 (August 30th, 2021) ###
+* Introduces `one-time-login/v1/token` WP REST API endpoint to generate tokens [[#28](https://github.com/danielbachhuber/one-time-login/pull/28)].
 
 ### 0.3.1 (June 1st, 2021) ###
 * Fires `one_time_login_after_auth_cookie_set` action after the auth cookie is set [[#27](https://github.com/danielbachhuber/one-time-login/pull/27)].

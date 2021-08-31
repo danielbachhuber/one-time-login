@@ -1,0 +1,29 @@
+{
+    "name": "danielbachhuber/one-time-login",
+    "type": "wordpress-plugin",
+    "repositories":[
+        {
+            "type":"composer",
+            "url":"https://wpackagist.org"
+        }
+    ],
+    "require-dev": {
+        "wp-cli/dist-archive-command": "^2.0",
+        "dealerdirect/phpcodesniffer-composer-installer": "^0.7.0",
+        "wp-coding-standards/wpcs": "^2.0",
+        "sirbrillig/phpcs-variable-analysis": "^2.5",
+        "phpcompatibility/phpcompatibility-wp": "^2.0",
+        "phpunit/phpunit": "5.7.*",
+        "yoast/phpunit-polyfills": "^1.0"
+    },
+    "extra": {
+        "installer-paths": {
+            "vendor/{$name}/": ["type:wordpress-plugin"]
+        }
+    },
+    "scripts": {
+        "phpcs": "vendor/bin/phpcs",
+        "phpcbf": "vendor/bin/phpcbf",
+        "phpunit": "vendor/bin/phpunit"
+    }
+}

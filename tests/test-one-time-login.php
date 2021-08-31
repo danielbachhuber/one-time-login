@@ -11,37 +11,44 @@
 class OneTimeLoginTest extends WP_UnitTestCase {
 
 	/**
+	 * Array of WP_User objects.
+	 *
 	 * @var WP_User[]
 	 */
 	protected static $users = array(
 		'administrator' => null,
 		'editor'        => null,
-		'other_user'    => null
+		'other_user'    => null,
 	);
 
 	/**
 	 * Set up WP users to test with different roles / capabilities
 	 *
-	 * @param $factory
+	 * @param object $factory Factory instance.
 	 */
 	public static function wpSetUpBeforeClass( $factory ) {
 		self::$users = array(
 			'administrator' => $factory->user->create_and_get( array( 'role' => 'administrator' ) ),
 			'editor'        => $factory->user->create_and_get( array( 'role' => 'editor' ) ),
-			'other_user'    => $factory->user->create_and_get( array( 'role' => 'editor' ) )
+			'other_user'    => $factory->user->create_and_get( array( 'role' => 'editor' ) ),
 		);
 	}
 
 	/**
 	 * Test the REST API call for token generation depending on user
+	 *
 	 * @dataProvider rest_api_provider
 	 *
 	 * @param string $user
-	 * @param int $status
+	 * @param int    $status
 	 */
 	public function test_rest_api_authorization( $user, $status ) {
 		if ( array_key_exists( $user, self::$users ) ) {
 			wp_set_current_user( self::$users[ $user ]->ID );
+		}
+
+		if ( is_multisite() && 'administrator' === $user ) {
+			update_site_option( 'site_admins', array( self::$users[ $user ]->user_login ) );
 		}
 
 		$request = new WP_REST_Request(
@@ -56,45 +63,50 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Provider for REST API data.
+	 *
 	 * @return array
 	 */
 	public function rest_api_provider() {
 		return array(
-			// Admin (who can edit any user)
+			// Admin (who can edit any user).
 			array( 'administrator', 200 ),
-			// User generating tokens for himself
+			// User generating tokens for himself.
 			array( 'other_user', 200 ),
-			// Editor (can't edit other users)
+			// Editor (can't edit other users).
 			array( 'editor', 403 ),
-			// Unauthenticated
+			// Unauthenticated.
 			array( 'unexisting_user', 401 ),
 		);
 	}
 
 	/**
 	 * Test one_time_login_generate_tokens()
+	 *
 	 * @dataProvider token_data_provider
 	 *
 	 * @param boolean $delay_delete
-	 * @param int $count
-	 * @param array $generated_count
+	 * @param int     $count
+	 * @param array   $generated_count
 	 */
 	function test_generate_token( $delay_delete, $count, $generated_count ) {
 		$this->assertSame(
-			count( one_time_login_generate_tokens( self::$users['administrator'], $delay_delete, $count ) ),
+			count( one_time_login_generate_tokens( self::$users['administrator'], $count, $delay_delete ) ),
 			$generated_count
 		);
 		$this->assertSame(
-			count( one_time_login_generate_tokens( self::$users['editor'], $delay_delete, $count ) ),
+			count( one_time_login_generate_tokens( self::$users['editor'], $count, $delay_delete ) ),
 			$generated_count
 		);
 		$this->assertSame(
-			count( one_time_login_generate_tokens( null, $delay_delete, $count ) ),
+			count( one_time_login_generate_tokens( null, $count, $delay_delete ) ),
 			0
 		);
 	}
 
 	/**
+	 * Provider for token data.
+	 *
 	 * @return array
 	 */
 	public function token_data_provider() {

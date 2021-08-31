@@ -2,8 +2,9 @@
 Contributors: danielbachhuber, aaronjorbin, acali, gdespoulain
 Tags: login
 Requires at least: 4.4
-Tested up to: 5.7
-Stable tag: 0.3.1
+Tested up to: 5.8
+Stable tag: 0.4.0
+Requires PHP: 7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +64,9 @@ Feel free to [file issues and pull requests](https://github.com/danielbachhuber/
 See description for installation and usage instructions.
 
 == Changelog ==
+
+= 0.4.0 (August 30th, 2021) =
+* Introduces `one-time-login/v1/token` WP REST API endpoint to generate tokens [[#28](https://github.com/danielbachhuber/one-time-login/pull/28)].
 
 = 0.3.1 (June 1st, 2021) =
 * Fires `one_time_login_after_auth_cookie_set` action after the auth cookie is set [[#27](https://github.com/danielbachhuber/one-time-login/pull/27)].
