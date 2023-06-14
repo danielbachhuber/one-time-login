@@ -1,12 +1,12 @@
 # One Time Login #
-**Contributors:** danielbachhuber, aaronjorbin, acali, gdespoulain  
-**Tags:** login  
-**Requires at least:** 4.4  
-**Tested up to:** 5.8  
-**Stable tag:** 0.4.0  
-**Requires PHP:** 7.1  
-**License:** GPLv2 or later  
-**License URI:** http://www.gnu.org/licenses/gpl-2.0.html  
+**Contributors:** danielbachhuber, aaronjorbin, acali, gdespoulain, masakik
+**Tags:** login
+**Requires at least:** 4.4
+**Tested up to:** 6.2
+**Stable tag:** 0.5.0
+**Requires PHP:** 7.1
+**License:** GPLv2 or later
+**License URI:** http://www.gnu.org/licenses/gpl-2.0.html
 
 Use WP-CLI to generate a one-time login URL for any user
 
@@ -21,7 +21,7 @@ Because they are one-time login URLs, they will only work once. If you need acce
 
 ==== Example ====
 
-    wp plugin install one-time-login --activate && wp user one-time-login <user> --count=3 --delay-delete
+    wp plugin install one-time-login --activate && wp user one-time-login <user> --count=3 --delay-delete --expiry=0
 
 After you run the command above, you'll see a success message like this:
 
@@ -37,6 +37,7 @@ Or like this if you asked for more than one:
 
 * *count*: Generate more than one login token (default: 1);
 * *delay-delete*: Delete existing tokens after 15 minutes, instead of immediately.
+* *expiry*: Delete existing token after "expiry" minutes from creation, even if not used (default: 0 - never expiry).
 
 # Using WP API to generate OTT URLs #
 
@@ -51,11 +52,12 @@ Or like this if you asked for more than one:
 			"user":"admin",
 			"count": 3,
 			"delay-delete": true
+			"expiry": 5
 		}'
 
 ==== Parameters ====
 
-Just as with WP CLI, you can add the **count** and **delay_delete** parameters to your call.
+Just as with WP CLI, you can add the **count**, **delay_delete** and **expiry** parameters to your call.
 
 Feel free to [file issues and pull requests](https://github.com/danielbachhuber/one-time-login) against the project on Github.
 
@@ -64,6 +66,9 @@ Feel free to [file issues and pull requests](https://github.com/danielbachhuber/
 See description for installation and usage instructions.
 
 ## Changelog ##
+
+### 0.5.0 (June 15th, 2023) ###
+* Introduces `--expiry` flag to delete tokens after "expiry" minutes from creation [[#1](https://github.com/danielbachhuber/one-time-login/issues/1)].
 
 ### 0.4.0 (August 30th, 2021) ###
 * Introduces `one-time-login/v1/token` WP REST API endpoint to generate tokens [[#28](https://github.com/danielbachhuber/one-time-login/pull/28)].
