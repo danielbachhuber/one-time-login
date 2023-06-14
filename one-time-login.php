@@ -92,7 +92,8 @@ function one_time_login_wp_cli_command( $args, $assoc_args ) {
 }
 
 if ( class_exists( 'WP_CLI' ) ) {
-	WP_CLI::add_command( 'user one-time-login', 'one_time_login_wp_cli_command' );
+	$args = ['synopsis' => '<user> [--count=<count>] [--delay-delete] [--expiry=<minutes>]'];
+	WP_CLI::add_command( 'user one-time-login', 'one_time_login_wp_cli_command', $args );
 }
 
 /**
