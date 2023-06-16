@@ -15,7 +15,7 @@
 /**
  * Generate one or multiple one-time login URL(s) for any user.
  *
- * @param WP_User|null $user  ID, email address, or user login for the user.
+ * @param WP_User|null $user            ID, email address, or user login for the user.
  * @param int          $count           Generate a specified number of login tokens (default: 1).
  * @param bool         $delay_delete    Delete existing tokens after 15 minutes, instead of immediately.
  * @param int          $expiry          Delete existing token after $expiry minutes from creation, even if not used (default: 0 - not expiry).
@@ -52,7 +52,6 @@ function one_time_login_generate_tokens( $user, $count, $delay_delete, $expiry )
 				wp_schedule_single_event( time() + ( $expiry * MINUTE_IN_SECONDS ), 'one_time_login_cleanup_expired_tokens', array( $user->ID, $tokens ) );
 			}
 		}
-
 	}
 
 	return $login_urls;
@@ -64,9 +63,16 @@ function one_time_login_generate_tokens( $user, $count, $delay_delete, $expiry )
  * ## OPTIONS
  *
  * <user>
+ * : ID, email address, or user login for the user
+ *
  * [--count=<count>]
+ * : Generate a specified number of login tokens (default: 1)
+ *
  * [--delay-delete]
+ * : Delete existing tokens after 15 minutes, instead of immediately
+ *
  * [--expiry=<minutes>]
+ * : Delete existing token after $expiry minutes from creation, even if not used (default: 0 - not expiry)
  *
  * ## EXAMPLES
  *
@@ -92,8 +98,7 @@ function one_time_login_wp_cli_command( $args, $assoc_args ) {
 }
 
 if ( class_exists( 'WP_CLI' ) ) {
-	$args = ['synopsis' => '<user> [--count=<count>] [--delay-delete] [--expiry=<minutes>]'];
-	WP_CLI::add_command( 'user one-time-login', 'one_time_login_wp_cli_command', $args );
+	WP_CLI::add_command( 'user one-time-login', 'one_time_login_wp_cli_command' );
 }
 
 /**
