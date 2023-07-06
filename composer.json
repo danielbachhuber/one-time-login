@@ -9,11 +9,11 @@
     ],
     "require-dev": {
         "wp-cli/dist-archive-command": "^2.0",
-        "dealerdirect/phpcodesniffer-composer-installer": "^0.7.0",
+        "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3 || ^0.5 || ^0.6.2 || ^0.7.1 || ^1.0.0",
         "wp-coding-standards/wpcs": "^2.0",
         "sirbrillig/phpcs-variable-analysis": "^2.5",
         "phpcompatibility/phpcompatibility-wp": "^2.0",
-        "phpunit/phpunit": "5.7.*",
+        "phpunit/phpunit": "^8",
         "yoast/phpunit-polyfills": "^1.0"
     },
     "extra": {
@@ -25,5 +25,13 @@
         "phpcs": "vendor/bin/phpcs",
         "phpcbf": "vendor/bin/phpcbf",
         "phpunit": "vendor/bin/phpunit"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "platform": {
+            "php": "7.4"
+        }
     }
 }
