@@ -9,13 +9,12 @@ workflows:
 version: 2
 
 job-references:
-  mysql_image: &mysql_image cimg/mariadb:10.5
+  mysql_image: &mysql_image cimg/mysql:5.7
 
   install_dependencies: &install_dependencies
     name: "Install Dependencies"
     command: |
       sudo apt-get update && sudo apt-get install subversion
-      sudo apt-get install mariadb-client-10.5
       composer install
 
   php_job: &php_job
