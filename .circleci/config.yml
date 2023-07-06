@@ -2,9 +2,10 @@ workflows:
   version: 2
   main:
     jobs:
-      - php74-build
-      - php81-build
-      - php81-build
+      - lint
+      - php74-test
+      - php80-test
+      - php81-test
 
 version: 2
 
@@ -28,24 +29,33 @@ job-references:
       - run:
           name: "Run Tests"
           command: |
-            composer phpcs
             rm -rf $WP_TESTS_DIR $WP_CORE_DIR
             bash bin/install-wp-tests.sh wordpress_test root '' 127.0.0.1 latest
             composer phpunit
             WP_MULTISITE=1 composer phpunit
 
 jobs:
-  php74-build:
+  lint:
+    docker:
+      - image: cimg/php:7.4
+    steps:
+      - checkout
+      - run:
+          name: "Run Lint"
+          command: |
+            composer install
+            composer phpcs
+  php74-test:
     <<: *php_job
     docker:
       - image: cimg/php:7.4
       - image: *mysql_image
-  php80-build:
+  php80-test:
     <<: *php_job
     docker:
       - image: cimg/php:8.0
       - image: *mysql_image
-  php81-build:
+  php81-test:
     <<: *php_job
     docker:
       - image: cimg/php:8.1
