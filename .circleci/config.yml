@@ -2,9 +2,6 @@ workflows:
   version: 2
   main:
     jobs:
-      - php56-build
-      - php70-build
-      - php71-build
       - php72-build
       - php73-build
       - php74-build
