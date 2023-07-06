@@ -7,7 +7,7 @@
  * Author URI:      https://danielbachhuber.com
  * Text Domain:     one-time-login
  * Domain Path:     /languages
- * Version:         0.4.0
+ * Version:         0.5.0
  *
  * @package         One_Time_Login
  */
@@ -15,13 +15,14 @@
 /**
  * Generate one or multiple one-time login URL(s) for any user.
  *
- * @param WP_User|null $user  ID, email address, or user login for the user.
+ * @param WP_User|null $user            ID, email address, or user login for the user.
  * @param int          $count           Generate a specified number of login tokens (default: 1).
- * @param bool         $delay_delete   Delete existing tokens after 15 minutes, instead of immediately.
+ * @param bool         $delay_delete    Delete existing tokens after 15 minutes, instead of immediately.
+ * @param int          $expiry          Delete existing token after $expiry minutes from creation, even if not used (default: 0 - not expiry).
  *
  * @return array
  */
-function one_time_login_generate_tokens( $user, $count, $delay_delete ) {
+function one_time_login_generate_tokens( $user, $count, $delay_delete, $expiry ) {
 	$tokens     = $new_tokens = array();
 	$login_urls = array();
 
@@ -47,6 +48,9 @@ function one_time_login_generate_tokens( $user, $count, $delay_delete ) {
 				'one_time_login_token' => $token,
 			);
 			$login_urls[] = add_query_arg( $query_args, wp_login_url() );
+			if ( $expiry ) {
+				wp_schedule_single_event( time() + ( $expiry * MINUTE_IN_SECONDS ), 'one_time_login_cleanup_expired_tokens', array( $user->ID, $tokens ) );
+			}
 		}
 	}
 
@@ -59,8 +63,16 @@ function one_time_login_generate_tokens( $user, $count, $delay_delete ) {
  * ## OPTIONS
  *
  * <user>
+ * : ID, email address, or user login for the user
+ *
  * [--count=<count>]
+ * : Generate a specified number of login tokens (default: 1)
+ *
  * [--delay-delete]
+ * : Delete existing tokens after 15 minutes, instead of immediately
+ *
+ * [--expiry=<minutes>]
+ * : Delete existing token after $expiry minutes from creation, even if not used (default: 0 - not expiry)
  *
  * ## EXAMPLES
  *
@@ -76,9 +88,10 @@ function one_time_login_wp_cli_command( $args, $assoc_args ) {
 	$fetcher      = new WP_CLI\Fetchers\User;
 	$user         = $fetcher->get_check( $args[0] );
 	$delay_delete = WP_CLI\Utils\get_flag_value( $assoc_args, 'delay-delete' );
+	$expiry 	  = WP_CLI\Utils\get_flag_value( $assoc_args, 'expiry' );
 	$count        = (int) ( $assoc_args['count'] ?? 1 );
 
-	$login_urls = one_time_login_generate_tokens( $user, $count, $delay_delete );
+	$login_urls = one_time_login_generate_tokens( $user, $count, $delay_delete, $expiry );
 	foreach ( $login_urls as $login_url ) {
 		WP_CLI::log( $login_url );
 	}
@@ -95,6 +108,7 @@ if ( class_exists( 'WP_CLI' ) ) {
  *
  * /count/<count>/
  * /delay-delete/<0 or 1>
+ * /expiry/<minutes>
  *
  * ## EXAMPLES
  *
@@ -111,9 +125,10 @@ function one_time_login_api_request( WP_REST_Request $request ) {
 
 	$user         = get_user_by( 'login', $request['user'] );
 	$delay_delete = (bool) ( $request['delay_delete'] ?? false );
+	$expiry       = (int) ( $request['expiry'] ?? 0 );
 	$count        = (int) ( $request['count'] ?? 1 );
 
-	$login_urls = one_time_login_generate_tokens( $user, $count, $delay_delete );
+	$login_urls = one_time_login_generate_tokens( $user, $count, $delay_delete, $expiry );
 
 	return new WP_REST_Response( $login_urls );
 }
@@ -140,6 +155,12 @@ function one_time_login_rest_api_init() {
 						},
 					),
 					'delay_delete' => array(
+						'required'          => false,
+						'validate_callback' => function ( $param ) {
+							return is_numeric( $param );
+						},
+					),
+					'expiry' => array(
 						'required'          => false,
 						'validate_callback' => function ( $param ) {
 							return is_numeric( $param );
