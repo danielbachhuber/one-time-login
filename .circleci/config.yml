@@ -47,43 +47,6 @@ job-references:
             WP_MULTISITE=1 phpunit
 
 jobs:
-  php56-build:
-    <<: *php_job
-    docker:
-      - image: cimg/php:5.6
-      - image: *mysql_image
-    steps:
-      - checkout
-      - run: *setup_environment
-      - run: *install_dependencies
-      - run:
-          name: "Run Tests"
-          command: |
-            composer global require "phpunit/phpunit=5.7.*"
-            composer global require wp-coding-standards/wpcs
-            phpcs --config-set installed_paths $HOME/.composer/vendor/wp-coding-standards/wpcs
-            phpcs
-            SKIP_DB_CREATE=false
-            {{#wp_versions_to_test}}
-            rm -rf $WP_TESTS_DIR $WP_CORE_DIR
-            bash bin/install-wp-tests.sh wordpress_test root '' 127.0.0.1 {{.}} $SKIP_DB_CREATE
-            phpunit
-            WP_MULTISITE=1 phpunit
-            SKIP_DB_CREATE=true
-            {{/wp_versions_to_test}}
-
-  php70-build:
-    <<: *php_job
-    docker:
-      - image: cimg/php:7.0
-      - image: *mysql_image
-
-  php71-build:
-    <<: *php_job
-    docker:
-      - image: cimg/php:7.1
-      - image: *mysql_image
-
   php72-build:
     <<: *php_job
     docker:
