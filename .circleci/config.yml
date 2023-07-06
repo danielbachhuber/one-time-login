@@ -10,7 +10,7 @@ version: 2
 jobs:
   lint:
     docker:
-      - image: circleci/php:7.2-node-browsers
+      - image: circleci/php:7.4-node-browsers
     steps:
       - checkout
       - restore_cache:
@@ -27,8 +27,8 @@ jobs:
             composer phpcs
   test-php:
     docker:
-      - image: circleci/php:7.2-node-browsers
-      - image: circleci/mariadb:10.3
+      - image: circleci/php:7.4-node-browsers
+      - image: circleci/mariadb:10.5
     environment:
       - WP_TESTS_DIR: "/tmp/wordpress-tests-lib"
       - WP_CORE_DIR: "/tmp/wordpress/"
