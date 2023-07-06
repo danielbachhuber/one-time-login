@@ -25,8 +25,7 @@ job-references:
     command: |
       sudo apt-get update && sudo apt-get install subversion
       sudo -E docker-php-ext-install mysqli
-      sudo sh -c "printf '\ndeb http://ftp.us.debian.org/debian sid main\n' >> /etc/apt/sources.list"
-      sudo apt-get update && sudo apt-get install mariadb-client-10.5
+      sudo apt-get install mariadb-client-10.5
 
   php_job: &php_job
     environment:
