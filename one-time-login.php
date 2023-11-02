@@ -18,10 +18,11 @@
  * @param WP_User|null $user  ID, email address, or user login for the user.
  * @param int          $count           Generate a specified number of login tokens (default: 1).
  * @param bool         $delay_delete   Delete existing tokens after 15 minutes, instead of immediately.
+ * @param string       $redirect_to    Send the user to this wp-admin URL after logging in.
  *
  * @return array
  */
-function one_time_login_generate_tokens( $user, $count, $delay_delete ) {
+function one_time_login_generate_tokens( $user, $count, $delay_delete, $redirect_to = '' ) {
 	$tokens     = $new_tokens = array();
 	$login_urls = array();
 
@@ -46,6 +47,9 @@ function one_time_login_generate_tokens( $user, $count, $delay_delete ) {
 				'user_id'              => $user->ID,
 				'one_time_login_token' => $token,
 			);
+			if ($redirect_to) {
+				$query_args['redirect_to'] = urlencode($redirect_to);
+			}
 			$login_urls[] = add_query_arg( $query_args, wp_login_url() );
 		}
 	}
@@ -61,6 +65,7 @@ function one_time_login_generate_tokens( $user, $count, $delay_delete ) {
  * <user>
  * [--count=<count>]
  * [--delay-delete]
+ * [--redirect-to=<url>]
  *
  * ## EXAMPLES
  *
@@ -77,8 +82,9 @@ function one_time_login_wp_cli_command( $args, $assoc_args ) {
 	$user         = $fetcher->get_check( $args[0] );
 	$delay_delete = WP_CLI\Utils\get_flag_value( $assoc_args, 'delay-delete' );
 	$count        = (int) ( $assoc_args['count'] ?? 1 );
+	$redirect_to  = $assoc_args['redirect-to'] ?? '';
 
-	$login_urls = one_time_login_generate_tokens( $user, $count, $delay_delete );
+	$login_urls = one_time_login_generate_tokens( $user, $count, $delay_delete, $redirect_to );
 	foreach ( $login_urls as $login_url ) {
 		WP_CLI::log( $login_url );
 	}
@@ -244,7 +250,12 @@ function one_time_login_handle_token() {
 	update_user_meta( $user->ID, 'one_time_login_token', $tokens );
 	wp_set_auth_cookie( $user->ID, true, is_ssl() );
 	do_action( 'one_time_login_after_auth_cookie_set', $user );
-	wp_safe_redirect( admin_url() );
+	$admin_url = admin_url();
+	if (isset($_GET['redirect_to'])) {
+		$admin_url .= urldecode($_GET['redirect_to']);
+                $admin_url = sanitize_url($admin_url);
+	}
+	wp_safe_redirect( $admin_url );	
 	exit;
 }
 
