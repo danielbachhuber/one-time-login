@@ -43,12 +43,12 @@ function one_time_login_generate_tokens( $user, $count, $delay_delete, $redirect
 		update_user_meta( $user->ID, 'one_time_login_token', $tokens );
 		do_action( 'one_time_login_created', $user );
 		foreach ( $new_tokens as $token ) {
-			$query_args   = array(
+			$query_args = array(
 				'user_id'              => $user->ID,
 				'one_time_login_token' => $token,
 			);
-			if ($redirect_to) {
-				$query_args['redirect_to'] = urlencode($redirect_to);
+			if ( $redirect_to ) {
+				$query_args['redirect_to'] = urlencode( $redirect_to );
 			}
 			$login_urls[] = add_query_arg( $query_args, wp_login_url() );
 		}
@@ -251,11 +251,11 @@ function one_time_login_handle_token() {
 	wp_set_auth_cookie( $user->ID, true, is_ssl() );
 	do_action( 'one_time_login_after_auth_cookie_set', $user );
 	$admin_url = admin_url();
-	if (isset($_GET['redirect_to'])) {
-		$admin_url .= urldecode($_GET['redirect_to']);
-                $admin_url = sanitize_url($admin_url);
+	if ( isset( $_GET['redirect_to'] ) ) {
+		$admin_url        .= urldecode( $_GET['redirect_to'] );
+				$admin_url = sanitize_url( $admin_url );
 	}
-	wp_safe_redirect( $admin_url );	
+	wp_safe_redirect( $admin_url );
 	exit;
 }
 
