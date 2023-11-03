@@ -36,20 +36,20 @@ function one_time_login_generate_tokens( $user, $count, $delay_delete, $redirect
 		for ( $i = 0; $i < $count; $i++ ) {
 			$password     = wp_generate_password();
 			$token        = sha1( $password );
-			$tokens[]     = $token;
+			$tokens[]     = array(
+				'token'       => $token,
+				'redirect_to' => $redirect_to,
+			);
 			$new_tokens[] = $token;
 		}
 
 		update_user_meta( $user->ID, 'one_time_login_token', $tokens );
 		do_action( 'one_time_login_created', $user );
 		foreach ( $new_tokens as $token ) {
-			$query_args = array(
+			$query_args   = array(
 				'user_id'              => $user->ID,
 				'one_time_login_token' => $token,
 			);
-			if ( $redirect_to ) {
-				$query_args['redirect_to'] = urlencode( $redirect_to );
-			}
 			$login_urls[] = add_query_arg( $query_args, wp_login_url() );
 		}
 	}
@@ -95,7 +95,7 @@ if ( class_exists( 'WP_CLI' ) ) {
 }
 
 /**
- * Generate one-time tokens using WP CLI.
+ * Generate one-time tokens using WP REST API.
  *
  * ## OPTIONS
  *
@@ -114,7 +114,6 @@ if ( class_exists( 'WP_CLI' ) ) {
  * @return WP_REST_Response
  */
 function one_time_login_api_request( WP_REST_Request $request ) {
-
 	$user         = get_user_by( 'login', $request['user'] );
 	$delay_delete = (bool) ( $request['delay_delete'] ?? false );
 	$count        = (int) ( $request['count'] ?? 1 );
@@ -157,6 +156,7 @@ function one_time_login_rest_api_init() {
 						return false;
 					}
 					$user = get_user_by( 'login', $request['user'] );
+
 					return current_user_can( 'edit_user', $user->ID );
 				},
 			),
@@ -231,13 +231,26 @@ function one_time_login_handle_token() {
 		wp_die( $error );
 	}
 
-	$tokens   = get_user_meta( $user->ID, 'one_time_login_token', true );
-	$tokens   = is_string( $tokens ) ? array( $tokens ) : $tokens;
-	$is_valid = false;
+	$tokens      = get_user_meta( $user->ID, 'one_time_login_token', true );
+	$tokens      = is_string( $tokens ) ? array( $tokens ) : $tokens;
+	$is_valid    = false;
+	$redirect_to = '';
+
 	foreach ( $tokens as $i => $token ) {
-		if ( hash_equals( $token, $_GET['one_time_login_token'] ) ) {
+		$this_token = '';
+		if ( is_array( $token ) ) {
+			$this_token = $token['token'];
+		} else {
+			$this_token = $token;
+		}
+		if ( hash_equals( $this_token, $_GET['one_time_login_token'] ) ) {
 			$is_valid = true;
 			unset( $tokens[ $i ] );
+
+			if ( is_array( $token ) && isset( $token['redirect_to'] ) ) {
+				$redirect_to = $token['redirect_to'];
+			}
+
 			break;
 		}
 	}
@@ -250,12 +263,7 @@ function one_time_login_handle_token() {
 	update_user_meta( $user->ID, 'one_time_login_token', $tokens );
 	wp_set_auth_cookie( $user->ID, true, is_ssl() );
 	do_action( 'one_time_login_after_auth_cookie_set', $user );
-	$admin_url = admin_url();
-	if ( isset( $_GET['redirect_to'] ) ) {
-		$admin_url        .= urldecode( $_GET['redirect_to'] );
-				$admin_url = sanitize_url( $admin_url );
-	}
-	wp_safe_redirect( $admin_url );
+	wp_safe_redirect( admin_url() . $redirect_to );
 	exit;
 }
 
