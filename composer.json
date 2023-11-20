@@ -14,7 +14,7 @@
         "sirbrillig/phpcs-variable-analysis": "^2.5",
         "phpcompatibility/phpcompatibility-wp": "^2.0",
         "phpunit/phpunit": "^8",
-        "yoast/phpunit-polyfills": "^1.0"
+        "yoast/phpunit-polyfills": "^2.0"
     },
     "extra": {
         "installer-paths": {
