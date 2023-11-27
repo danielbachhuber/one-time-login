@@ -6,6 +6,9 @@
 	convertNoticesToExceptions="true"
 	convertWarningsToExceptions="true"
 	>
+	<php>
+		<const name="ONE_TIME_LOGIN_RUNNING_TESTS" value="true"/>
+	</php>
 	<testsuites>
 		<testsuite name="main">
 			<directory prefix="test-" suffix=".php">./tests/</directory>
