@@ -89,7 +89,7 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 	 * @param int     $count
 	 * @param array   $generated_count
 	 */
-	function test_generate_token( $delay_delete, $count, $generated_count ) {
+	public function test_generate_token( $delay_delete, $count, $generated_count ) {
 		$this->assertSame(
 			count( one_time_login_generate_tokens( self::$users['administrator'], $count, $delay_delete ) ),
 			$generated_count
