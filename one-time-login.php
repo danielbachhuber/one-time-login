@@ -73,7 +73,7 @@ function one_time_login_generate_tokens( $user, $count, $delay_delete ) {
  * @param array $assoc_args
  */
 function one_time_login_wp_cli_command( $args, $assoc_args ) {
-	$fetcher      = new WP_CLI\Fetchers\User;
+	$fetcher      = new WP_CLI\Fetchers\User();
 	$user         = $fetcher->get_check( $args[0] );
 	$delay_delete = WP_CLI\Utils\get_flag_value( $assoc_args, 'delay-delete' );
 	$count        = (int) ( $assoc_args['count'] ?? 1 );
