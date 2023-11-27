@@ -249,6 +249,13 @@ function one_time_login_handle_token() {
 
 add_action( 'init', 'one_time_login_handle_token' );
 
+/**
+ * Redirect to a URL, and only exit if we're not running tests.
+ *
+ * @param string $location
+ * @param int    $status
+ * @param string $x_redirect_by
+ */
 function one_time_login_safe_redirect( $location, $status = 302, $x_redirect_by = 'WordPress' ) {
 	wp_safe_redirect( $location, $status, $x_redirect_by );
 	if ( ! defined( 'ONE_TIME_LOGIN_RUNNING_TESTS' ) || ! ONE_TIME_LOGIN_RUNNING_TESTS ) {

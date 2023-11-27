@@ -111,8 +111,8 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 		$this->expectException( WPDieException::class );
 		$this->expectExceptionMessage( 'Invalid one-time login token. <a href="http://example.org/wp-login.php">Try signing in instead</a>?' );
 		one_time_login_generate_tokens( self::$users['administrator'], 1, false );
-		$tokens = get_user_meta( self::$users['administrator']->ID, 'one_time_login_token', true );
-		$token  = array_shift( $tokens );
+		$tokens                       = get_user_meta( self::$users['administrator']->ID, 'one_time_login_token', true );
+		$token                        = array_shift( $tokens );
 		$GLOBALS['pagenow']           = 'wp-login.php';
 		$_GET['one_time_login_token'] = $token;
 		$_GET['user_id']              = 999999;
@@ -126,8 +126,6 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 		$this->expectException( WPDieException::class );
 		$this->expectExceptionMessage( 'Invalid one-time login token. <a href="http://example.org/wp-login.php">Try signing in instead</a>?' );
 		one_time_login_generate_tokens( self::$users['administrator'], 1, false );
-		$tokens = get_user_meta( self::$users['administrator']->ID, 'one_time_login_token', true );
-		$token  = array_shift( $tokens );
 		$GLOBALS['pagenow']           = 'wp-login.php';
 		$_GET['one_time_login_token'] = 'abc123';
 		$_GET['user_id']              = self::$users['administrator']->ID;
@@ -139,8 +137,8 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 	 */
 	public function test_one_time_login_handle_token_success() {
 		one_time_login_generate_tokens( self::$users['administrator'], 1, false );
-		$tokens = get_user_meta( self::$users['administrator']->ID, 'one_time_login_token', true );
-		$token  = array_shift( $tokens );
+		$tokens                       = get_user_meta( self::$users['administrator']->ID, 'one_time_login_token', true );
+		$token                        = array_shift( $tokens );
 		$GLOBALS['pagenow']           = 'wp-login.php';
 		$_GET['one_time_login_token'] = $token;
 		$_GET['user_id']              = self::$users['administrator']->ID;
@@ -214,7 +212,7 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 	/**
 	 * Tear down the tests.
 	 */
-	public function tearDown() : void {
+	public function tearDown(): void {
 		parent::tearDown();
 		remove_filter( 'wp_redirect', array( $this, 'filter_wp_redirect' ) );
 	}
