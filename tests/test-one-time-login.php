@@ -22,6 +22,30 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 	);
 
 	/**
+	 * Redirect location.
+	 *
+	 * @var string|null
+	 */
+	public $redirect_location = null;
+
+	/**
+	 * Redirect status.
+	 *
+	 * @var int|null
+	 */
+	public $redirect_status = null;
+
+	/**
+	 * Set up the tests.
+	 */
+	public function setUp(): void {
+		parent::setUp();
+		add_filter( 'wp_redirect', array( $this, 'filter_wp_redirect' ), 10, 2 );
+		$this->redirect_location = null;
+		$this->redirect_status   = null;
+	}
+
+	/**
 	 * Set up WP users to test with different roles / capabilities
 	 *
 	 * @param object $factory Factory instance.
@@ -81,6 +105,48 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test that one_time_login_handle_token() works as expected when user is invalid.
+	 */
+	public function test_one_time_login_handle_token_invalid_user() {
+		$this->expectException( WPDieException::class );
+		$this->expectExceptionMessage( 'Invalid one-time login token. <a href="http://example.org/wp-login.php">Try signing in instead</a>?' );
+		one_time_login_generate_tokens( self::$users['administrator'], 1, false );
+		$tokens                       = get_user_meta( self::$users['administrator']->ID, 'one_time_login_token', true );
+		$token                        = array_shift( $tokens );
+		$GLOBALS['pagenow']           = 'wp-login.php';
+		$_GET['one_time_login_token'] = $token;
+		$_GET['user_id']              = 999999;
+		one_time_login_handle_token();
+	}
+
+	/**
+	 * Test that one_time_login_handle_token() works as expected when user is token.
+	 */
+	public function test_one_time_login_handle_token_invalid_token() {
+		$this->expectException( WPDieException::class );
+		$this->expectExceptionMessage( 'Invalid one-time login token. <a href="http://example.org/wp-login.php">Try signing in instead</a>?' );
+		one_time_login_generate_tokens( self::$users['administrator'], 1, false );
+		$GLOBALS['pagenow']           = 'wp-login.php';
+		$_GET['one_time_login_token'] = 'abc123';
+		$_GET['user_id']              = self::$users['administrator']->ID;
+		one_time_login_handle_token();
+	}
+
+	/**
+	 * Test that one_time_login_handle_token() works as expected when conditions are met.
+	 */
+	public function test_one_time_login_handle_token_success() {
+		one_time_login_generate_tokens( self::$users['administrator'], 1, false );
+		$tokens                       = get_user_meta( self::$users['administrator']->ID, 'one_time_login_token', true );
+		$token                        = array_shift( $tokens );
+		$GLOBALS['pagenow']           = 'wp-login.php';
+		$_GET['one_time_login_token'] = $token;
+		$_GET['user_id']              = self::$users['administrator']->ID;
+		one_time_login_handle_token();
+		$this->assertRedirect( admin_url(), 302 );
+	}
+
+	/**
 	 * Test one_time_login_generate_tokens()
 	 *
 	 * @dataProvider token_data_provider
@@ -117,5 +183,37 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 			array( true, 3, 3 ),
 			array( false, 10, 10 ),
 		);
+	}
+
+	/**
+	 * Filter wp_redirect() to capture the redirect location.
+	 *
+	 * @param string $location Redirect location.
+	 * @param int    $status   HTTP status code.
+	 * @return string
+	 */
+	public function filter_wp_redirect( $location, $status = null ) {
+		$this->redirect_location = $location;
+		$this->redirect_status   = $status;
+		return null;
+	}
+
+	/**
+	 * Assert an expected redirect.
+	 *
+	 * @param string $location Expected redirect location.
+	 * @param int    $status   Expected redirect status.
+	 */
+	public function assertRedirect( $location, $status ) {
+		$this->assertSame( $location, $this->redirect_location );
+		$this->assertSame( $status, $this->redirect_status );
+	}
+
+	/**
+	 * Tear down the tests.
+	 */
+	public function tearDown(): void {
+		parent::tearDown();
+		remove_filter( 'wp_redirect', array( $this, 'filter_wp_redirect' ) );
 	}
 }
