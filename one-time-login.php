@@ -18,10 +18,11 @@
  * @param WP_User|null $user  ID, email address, or user login for the user.
  * @param int          $count           Generate a specified number of login tokens (default: 1).
  * @param bool         $delay_delete   Delete existing tokens after 15 minutes, instead of immediately.
+ * @param string       $redirect_to    Send the user to this wp-admin URL after logging in.
  *
  * @return array
  */
-function one_time_login_generate_tokens( $user, $count, $delay_delete ) {
+function one_time_login_generate_tokens( $user, $count, $delay_delete, $redirect_to = '' ) {
 	$tokens     = $new_tokens = array();
 	$login_urls = array();
 
@@ -35,7 +36,10 @@ function one_time_login_generate_tokens( $user, $count, $delay_delete ) {
 		for ( $i = 0; $i < $count; $i++ ) {
 			$password     = wp_generate_password();
 			$token        = sha1( $password );
-			$tokens[]     = $token;
+			$tokens[]     = array(
+				'token'       => $token,
+				'redirect_to' => $redirect_to,
+			);
 			$new_tokens[] = $token;
 		}
 
@@ -61,6 +65,7 @@ function one_time_login_generate_tokens( $user, $count, $delay_delete ) {
  * <user>
  * [--count=<count>]
  * [--delay-delete]
+ * [--redirect-to=<url>]
  *
  * ## EXAMPLES
  *
@@ -77,8 +82,9 @@ function one_time_login_wp_cli_command( $args, $assoc_args ) {
 	$user         = $fetcher->get_check( $args[0] );
 	$delay_delete = WP_CLI\Utils\get_flag_value( $assoc_args, 'delay-delete' );
 	$count        = (int) ( $assoc_args['count'] ?? 1 );
+	$redirect_to  = $assoc_args['redirect-to'] ?? '';
 
-	$login_urls = one_time_login_generate_tokens( $user, $count, $delay_delete );
+	$login_urls = one_time_login_generate_tokens( $user, $count, $delay_delete, $redirect_to );
 	foreach ( $login_urls as $login_url ) {
 		WP_CLI::log( $login_url );
 	}
@@ -89,7 +95,7 @@ if ( class_exists( 'WP_CLI' ) ) {
 }
 
 /**
- * Generate one-time tokens using WP CLI.
+ * Generate one-time tokens using WP REST API.
  *
  * ## OPTIONS
  *
@@ -108,7 +114,6 @@ if ( class_exists( 'WP_CLI' ) ) {
  * @return WP_REST_Response
  */
 function one_time_login_api_request( WP_REST_Request $request ) {
-
 	$user         = get_user_by( 'login', $request['user'] );
 	$delay_delete = (bool) ( $request['delay_delete'] ?? false );
 	$count        = (int) ( $request['count'] ?? 1 );
@@ -151,6 +156,7 @@ function one_time_login_rest_api_init() {
 						return false;
 					}
 					$user = get_user_by( 'login', $request['user'] );
+
 					return current_user_can( 'edit_user', $user->ID );
 				},
 			),
@@ -225,13 +231,26 @@ function one_time_login_handle_token() {
 		wp_die( $error );
 	}
 
-	$tokens   = get_user_meta( $user->ID, 'one_time_login_token', true );
-	$tokens   = is_string( $tokens ) ? array( $tokens ) : $tokens;
-	$is_valid = false;
+	$tokens      = get_user_meta( $user->ID, 'one_time_login_token', true );
+	$tokens      = is_string( $tokens ) ? array( $tokens ) : $tokens;
+	$is_valid    = false;
+	$redirect_to = '';
+
 	foreach ( $tokens as $i => $token ) {
-		if ( hash_equals( $token, $_GET['one_time_login_token'] ) ) {
+		$this_token = '';
+		if ( is_array( $token ) ) {
+			$this_token = $token['token'];
+		} else {
+			$this_token = $token;
+		}
+		if ( hash_equals( $this_token, $_GET['one_time_login_token'] ) ) {
 			$is_valid = true;
 			unset( $tokens[ $i ] );
+
+			if ( is_array( $token ) && isset( $token['redirect_to'] ) ) {
+				$redirect_to = $token['redirect_to'];
+			}
+
 			break;
 		}
 	}
@@ -244,7 +263,7 @@ function one_time_login_handle_token() {
 	update_user_meta( $user->ID, 'one_time_login_token', $tokens );
 	wp_set_auth_cookie( $user->ID, true, is_ssl() );
 	do_action( 'one_time_login_after_auth_cookie_set', $user );
-	one_time_login_safe_redirect( admin_url() );
+	one_time_login_safe_redirect( admin_url() . $redirect_to );
 }
 
 add_action( 'init', 'one_time_login_handle_token' );
