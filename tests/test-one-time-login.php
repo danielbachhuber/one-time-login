@@ -138,9 +138,9 @@ class OneTimeLoginTest extends WP_UnitTestCase {
 	public function test_one_time_login_handle_token_success() {
 		one_time_login_generate_tokens( self::$users['administrator'], 1, false );
 		$tokens                       = get_user_meta( self::$users['administrator']->ID, 'one_time_login_token', true );
-		$token                        = array_shift( $tokens );
+		$token                        = reset( $tokens );
 		$GLOBALS['pagenow']           = 'wp-login.php';
-		$_GET['one_time_login_token'] = $token;
+		$_GET['one_time_login_token'] = $token['token'];
 		$_GET['user_id']              = self::$users['administrator']->ID;
 		one_time_login_handle_token();
 		$this->assertRedirect( admin_url(), 302 );
